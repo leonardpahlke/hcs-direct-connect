@@ -23,7 +23,7 @@ The server uses swagger and shows the documentation at the `/docs` endpoint.
 
 - To build the container in dev: `docker build -f Dockerfile.dev -t hcs-req-handler-dev .`
 - To build the container in prod: `docker build -f Dockerfile.prod -t hcs-req-handler-prod .`
-- To run the container: `docker run -p 8000:8000 hcs-req-handler`
+- To run the container: `docker run -p 8000:8000 hcs-req-handler-prod`
 
 ## References
 
