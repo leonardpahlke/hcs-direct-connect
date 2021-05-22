@@ -1,0 +1,3 @@
+name: hcs-sys-public
+runtime: nodejs
+description: public cloud system for direct connect hcs

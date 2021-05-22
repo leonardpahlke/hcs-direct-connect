@@ -1,0 +1,3 @@
+name: hcs-sys-platform
+runtime: nodejs
+description: central platform for direct connect hcs
