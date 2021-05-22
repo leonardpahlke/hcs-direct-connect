@@ -1,0 +1,4 @@
+/bin/
+/node_modules/
+*/node_modules/
+hcs-sys-public/req-handler-container/node_modules/
