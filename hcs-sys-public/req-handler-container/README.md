@@ -8,7 +8,7 @@ The server uses swagger and shows the documentation at the `/docs` endpoint.
 
 - GET `/`: response: {message: "request handler says hello"}
 - GET `/docs`: response: swagger documentation
-- POST `/user-info`: payload: {username: "...", token: "..."}, response: 200, 404
+- POST `/check-token`: payload: {token: "..."}, response: 200, 404
 - POST `/sign-in`: payload: {username: "...", password: "..."}, response: 200, 404
 - POST `/sign-up`: payload: {username: "...", password: "..."}, response: 200 or 404
 - POST `/sign-out`: payload: {token: "...", username: "..."}, response: 200 or 404 or 403
