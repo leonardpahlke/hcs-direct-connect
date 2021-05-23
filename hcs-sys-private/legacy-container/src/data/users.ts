@@ -10,6 +10,14 @@ var userList: Array<DataUser> = [
   },
 ];
 
+export function getUserNames(): string {
+  var strOfUsernames = "";
+  for (var user of userList) {
+    strOfUsernames = strOfUsernames + " " + user.username;
+  }
+  return strOfUsernames;
+}
+
 export function createUser(username: string, password: string): number {
   return userList.push({ username: username, password: password });
 }

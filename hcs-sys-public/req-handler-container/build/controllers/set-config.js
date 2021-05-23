@@ -20,23 +20,27 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const tsoa_1 = require("tsoa");
 const config_1 = require("../config");
-let PingController = class PingController {
-    getMessage() {
+let SetConfigController = class SetConfigController {
+    getMessage(legacyprivateip, legacyport) {
         return __awaiter(this, void 0, void 0, function* () {
+            config_1.changeConfig({
+                legacyContainerPrivateIp: legacyprivateip,
+                legacyContainerPort: legacyport,
+            });
             return {
-                message: "pong",
+                message: "config set",
                 config: config_1.currentRuntimeConfig,
             };
         });
     }
 };
 __decorate([
-    tsoa_1.Get("/"),
+    tsoa_1.Post("/:legacyprivateip/:legacyport"),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
-], PingController.prototype, "getMessage", null);
-PingController = __decorate([
-    tsoa_1.Route("")
-], PingController);
-exports.default = PingController;
+], SetConfigController.prototype, "getMessage", null);
+SetConfigController = __decorate([
+    tsoa_1.Route("/set-config")
+], SetConfigController);
+exports.default = SetConfigController;

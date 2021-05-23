@@ -19,24 +19,43 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const tsoa_1 = require("tsoa");
+const session_1 = require("../auth/session");
 const config_1 = require("../config");
-let PingController = class PingController {
-    getMessage() {
+const request_legacy_sys_1 = require("../request-legacy-sys");
+let SignInController = class SignInController {
+    getMessage(username, password) {
         return __awaiter(this, void 0, void 0, function* () {
-            return {
-                message: "pong",
-                config: config_1.currentRuntimeConfig,
-            };
+            // request legacy component
+            return request_legacy_sys_1.LegacySignIn(username, password).then((res) => {
+                if (res) {
+                    const session = session_1.encodeSession(config_1.secretKey, {
+                        username: username,
+                        dateCreated: Date.now(),
+                    });
+                    return {
+                        message: "user signed-in",
+                        session: session,
+                        statusCode: 200,
+                    };
+                }
+                else {
+                    return {
+                        message: "user could not get signed-in",
+                        session: { token: "", expires: 0, issued: 0 },
+                        statusCode: 404,
+                    };
+                }
+            });
         });
     }
 };
 __decorate([
-    tsoa_1.Get("/"),
+    tsoa_1.Post("/:username/:password"),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
-], PingController.prototype, "getMessage", null);
-PingController = __decorate([
-    tsoa_1.Route("")
-], PingController);
-exports.default = PingController;
+], SignInController.prototype, "getMessage", null);
+SignInController = __decorate([
+    tsoa_1.Route("sign-in")
+], SignInController);
+exports.default = SignInController;

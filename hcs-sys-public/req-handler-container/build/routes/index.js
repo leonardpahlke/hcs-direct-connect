@@ -14,10 +14,40 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const ping_1 = __importDefault(require("../controllers/ping"));
+const sign_in_1 = __importDefault(require("../controllers/sign-in"));
+const sign_up_1 = __importDefault(require("../controllers/sign-up"));
+const check_token_1 = __importDefault(require("../controllers/check-token"));
+const set_config_1 = __importDefault(require("../controllers/set-config"));
 const router = express_1.default.Router();
-router.get("/ping", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const controller = new ping_1.default();
     const response = yield controller.getMessage();
+    return res.send(response);
+}));
+router.post("/set-config/:legacyprivateip/:legacyport", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const controller = new set_config_1.default();
+    const response = yield controller.getMessage(_req.params.legacyprivateip, _req.params.legacyport);
+    return res.send(response);
+}));
+router.post("/sign-in/:username/:password", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const controller = new sign_in_1.default();
+    const response = yield controller.getMessage(_req.params.username, _req.params.password);
+    res.status(response.statusCode);
+    return res.send(response);
+}));
+router.post("/sign-up/:username/:password", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const controller = new sign_up_1.default();
+    const response = yield controller.getMessage(_req.params.username, _req.params.password);
+    res.status(response.statusCode);
+    return res.send(response);
+}));
+router.get("/session", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const session = res.locals.session;
+    res.status(200).json({ message: `Your username is ${session.username}` });
+}));
+router.get("/check-token", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const controller = new check_token_1.default();
+    const response = yield controller.getMessage(_req.params.token);
     return res.send(response);
 }));
 exports.default = router;

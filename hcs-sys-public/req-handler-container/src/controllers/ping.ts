@@ -1,18 +1,14 @@
 import { Get, Route } from "tsoa";
-import { getConfig, runtimeConfig } from "../config";
-
-interface PingResponse {
-  message: string;
-  config: runtimeConfig;
-}
+import { SysInfoResponse } from "../models/sys-info-response";
+import { currentRuntimeConfig } from "../config";
 
 @Route("")
 export default class PingController {
   @Get("/")
-  public async getMessage(): Promise<PingResponse> {
+  public async getMessage(): Promise<SysInfoResponse> {
     return {
       message: "pong",
-      config: getConfig(),
+      config: currentRuntimeConfig,
     };
   }
 }

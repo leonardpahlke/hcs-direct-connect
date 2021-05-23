@@ -19,24 +19,33 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const tsoa_1 = require("tsoa");
+const session_1 = require("../auth/session");
 const config_1 = require("../config");
-let PingController = class PingController {
-    getMessage() {
+let CheckTokenController = class CheckTokenController {
+    getMessage(token) {
         return __awaiter(this, void 0, void 0, function* () {
+            const decodeResult = session_1.decodeSession(config_1.secretKey, token);
+            if (decodeResult.type !== "valid") {
+                return {
+                    message: decodeResult.type,
+                    statusCode: 404,
+                };
+            }
+            const status = session_1.checkExpirationStatus(decodeResult.session);
             return {
-                message: "pong",
-                config: config_1.currentRuntimeConfig,
+                message: status,
+                statusCode: 200,
             };
         });
     }
 };
 __decorate([
-    tsoa_1.Get("/"),
+    tsoa_1.Post("/:token"),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
-], PingController.prototype, "getMessage", null);
-PingController = __decorate([
-    tsoa_1.Route("")
-], PingController);
-exports.default = PingController;
+], CheckTokenController.prototype, "getMessage", null);
+CheckTokenController = __decorate([
+    tsoa_1.Route("check-token")
+], CheckTokenController);
+exports.default = CheckTokenController;

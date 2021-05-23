@@ -1,4 +1,5 @@
 import { Get, Route } from "tsoa";
+import { getUserNames } from "../data/users";
 
 interface PingResponse {
   message: string;
@@ -9,7 +10,7 @@ export default class PingController {
   @Get("/")
   public async getMessage(): Promise<PingResponse> {
     return {
-      message: "pong",
+      message: "List of users:" + getUserNames(),
     };
   }
 }

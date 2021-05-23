@@ -6,14 +6,94 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
-			"PingResponse": {
+			"runtimeConfig": {
 				"properties": {
-					"message": {
+					"legacyContainerPrivateIp": {
+						"type": "string"
+					},
+					"legacyContainerPort": {
 						"type": "string"
 					}
 				},
 				"required": [
-					"message"
+					"legacyContainerPrivateIp",
+					"legacyContainerPort"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"SysInfoResponse": {
+				"properties": {
+					"message": {
+						"type": "string"
+					},
+					"config": {
+						"$ref": "#/components/schemas/runtimeConfig"
+					}
+				},
+				"required": [
+					"message",
+					"config"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"EncodeResult": {
+				"properties": {
+					"token": {
+						"type": "string"
+					},
+					"expires": {
+						"type": "number",
+						"format": "double"
+					},
+					"issued": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"token",
+					"expires",
+					"issued"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DefaultSessionTokenResponse": {
+				"properties": {
+					"message": {
+						"type": "string"
+					},
+					"session": {
+						"$ref": "#/components/schemas/EncodeResult"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"message",
+					"session",
+					"statusCode"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DefaultResponse": {
+				"properties": {
+					"message": {
+						"type": "string"
+					},
+					"statusCode": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"message",
+					"statusCode"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -31,7 +111,7 @@
 	},
 	"openapi": "3.0.0",
 	"paths": {
-		"/ping": {
+		"/": {
 			"get": {
 				"operationId": "GetMessage",
 				"responses": {
@@ -40,7 +120,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/PingResponse"
+									"$ref": "#/components/schemas/SysInfoResponse"
 								}
 							}
 						}
@@ -48,6 +128,142 @@
 				},
 				"security": [],
 				"parameters": []
+			}
+		},
+		"/sign-in/{username}/{password}": {
+			"post": {
+				"operationId": "GetMessage",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DefaultSessionTokenResponse"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "username",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "password",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/sign-out/{username}/{password}": {
+			"post": {
+				"operationId": "GetMessage",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DefaultSessionTokenResponse"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "username",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "password",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/check-token/{token}": {
+			"post": {
+				"operationId": "GetMessage",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DefaultResponse"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "token",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/set-config/{legacyprivateip}/{legacyport}": {
+			"post": {
+				"operationId": "GetMessage",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SysInfoResponse"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "legacyprivateip",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "legacyport",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
 			}
 		}
 	},

@@ -19,24 +19,42 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const tsoa_1 = require("tsoa");
+const session_1 = require("../auth/session");
 const config_1 = require("../config");
-let PingController = class PingController {
-    getMessage() {
+const request_legacy_sys_1 = require("../request-legacy-sys");
+let SignUpController = class SignUpController {
+    getMessage(username, password) {
         return __awaiter(this, void 0, void 0, function* () {
-            return {
-                message: "pong",
-                config: config_1.currentRuntimeConfig,
-            };
+            return request_legacy_sys_1.LegacySignUp(username, password).then((res) => {
+                if (res) {
+                    const session = session_1.encodeSession(config_1.secretKey, {
+                        username: username,
+                        dateCreated: Date.now(),
+                    });
+                    return {
+                        message: "user signed-up",
+                        session: session,
+                        statusCode: 200,
+                    };
+                }
+                else {
+                    return {
+                        message: "user could not get signed-up",
+                        session: { token: "", expires: 0, issued: 0 },
+                        statusCode: 404,
+                    };
+                }
+            });
         });
     }
 };
 __decorate([
-    tsoa_1.Get("/"),
+    tsoa_1.Post("/"),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
-], PingController.prototype, "getMessage", null);
-PingController = __decorate([
-    tsoa_1.Route("")
-], PingController);
-exports.default = PingController;
+], SignUpController.prototype, "getMessage", null);
+SignUpController = __decorate([
+    tsoa_1.Route("sign-out/:username/:password")
+], SignUpController);
+exports.default = SignUpController;
