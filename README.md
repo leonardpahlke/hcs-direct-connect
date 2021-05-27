@@ -15,4 +15,4 @@ The following diagram shows the folder structure of the project. The arrows indi
 
 The diagram shown below gives an idea of the software architecture of this project.
 
-![Software Architecture](./assets/BA-05-Verteilungssicht-Simple.png)
+![Software Architecture](./assets/BA-05-Verteilungssicht-2.png)

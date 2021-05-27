@@ -5,7 +5,6 @@ import {
   PartialSession,
   Session,
 } from "./interface-token";
-import { decode, encode, TAlgorithm } from "jwt-simple";
 
 // used algorithm to encode and decode the JWT token
 const encodeAlgorithm = "HS512";

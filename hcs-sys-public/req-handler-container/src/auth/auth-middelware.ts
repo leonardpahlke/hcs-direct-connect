@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import { secretKey } from "../config";
 import { DecodeResult, ExpirationStatus, Session } from "./interface-token";
 import { decodeSession, encodeSession, checkExpirationStatus } from "./session";
+import "jsonwebtoken";
+import { jwt } from "jsonwebtoken";
 
 /**
  * Express middleware, checks for a valid JSON Web Token and returns 401 Unauthorized if one isn't found.
@@ -86,4 +88,24 @@ export function requireJwtMiddleware(
 
   // Request has a valid or renewed session. Call next to continue to the authenticated route handler
   next();
+}
+
+function verifyToken(request: Request, response: Response, next: NextFunction) {
+  let token = request.headers["x-access-token"];
+
+  if (!token) {
+    return response.status(403).send({
+      message: "No token provided!",
+    });
+  }
+
+  jwt.verify(token, config.secret, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({
+        message: "Unauthorized!",
+      });
+    }
+    request.userId = decoded.id;
+    next();
+  });
 }
