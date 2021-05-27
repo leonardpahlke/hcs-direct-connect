@@ -17,30 +17,52 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const request_promise_1 = __importDefault(require("request-promise"));
 const tsoa_1 = require("tsoa");
 const config_1 = require("../config");
-let SetConfigController = class SetConfigController {
-    setContainerConfig(legacyprivateip, legacyport) {
+let SignInController = class SignInController {
+    runHealthCheckConnection() {
         return __awaiter(this, void 0, void 0, function* () {
-            config_1.changeConfig({
-                legacyContainerPrivateIp: legacyprivateip,
-                legacyContainerPort: legacyport,
+            // send ping request to legacy container
+            return request_promise_1.default("http://" +
+                config_1.currentRuntimeConfig.legacyContainerPrivateIp +
+                ":" +
+                config_1.currentRuntimeConfig.legacyContainerPort +
+                "/ping")
+                .then(function () {
+                return {
+                    message: "Request handler response",
+                    legacySystemResponse: {
+                        message: "Legacy system response",
+                        statusCode: 200,
+                    },
+                    statusCode: 200,
+                };
+            })
+                .catch(function () {
+                return {
+                    message: "Request handler response",
+                    legacySystemResponse: {
+                        message: "Legacy system response error received",
+                        statusCode: 404,
+                    },
+                    statusCode: 200,
+                };
             });
-            return {
-                message: "config set",
-                config: config_1.currentRuntimeConfig,
-            };
         });
     }
 };
 __decorate([
-    tsoa_1.Post("/:legacyprivateip/:legacyport"),
+    tsoa_1.Post("/"),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
-], SetConfigController.prototype, "setContainerConfig", null);
-SetConfigController = __decorate([
-    tsoa_1.Route("/set-config")
-], SetConfigController);
-exports.default = SetConfigController;
+], SignInController.prototype, "runHealthCheckConnection", null);
+SignInController = __decorate([
+    tsoa_1.Route("/health-check-connection")
+], SignInController);
+exports.default = SignInController;

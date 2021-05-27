@@ -22,7 +22,7 @@
 		"securitySchemes": {}
 	},
 	"info": {
-		"title": "req-handler-container",
+		"title": "legacy-container",
 		"version": "1.0.0",
 		"license": {
 			"name": "ISC"

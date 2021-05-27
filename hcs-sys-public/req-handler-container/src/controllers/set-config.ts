@@ -1,17 +1,17 @@
 import { Post, Route } from "tsoa";
-import { changeConfig, runtimeConfig, currentRuntimeConfig } from "../config";
-import { SysInfoResponse } from "../models/sys-info-response";
+import { changeConfig, currentRuntimeConfig } from "../config";
+import { SysInfoResponse } from "../response";
 
 @Route("/set-config")
 export default class SetConfigController {
   @Post("/:legacyprivateip/:legacyport")
-  public async getMessage(
+  public async setContainerConfig(
     legacyprivateip: string,
     legacyport: string
   ): Promise<SysInfoResponse> {
     changeConfig({
-      legacyContainerPrivateIp: legacyprivateip,
-      legacyContainerPort: legacyport,
+      legacySysPrivateIp: legacyprivateip,
+      legacySysPort: legacyport,
     });
     return {
       message: "config set",

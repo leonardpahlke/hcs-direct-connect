@@ -1,9 +1,8 @@
-import express, { Application, Request, Response } from "express";
+import express, { Application } from "express";
 import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
 
 import Router from "./routes";
-import { requireJwtMiddleware } from "./auth/auth-middelware";
 
 const PORT = process.env.PORT || 8000;
 
@@ -23,7 +22,6 @@ app.use(
   })
 );
 
-app.use("/session", requireJwtMiddleware);
 app.use(Router);
 
 app.listen(PORT, () => {

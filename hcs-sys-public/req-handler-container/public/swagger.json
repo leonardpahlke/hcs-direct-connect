@@ -8,21 +8,22 @@
 		"schemas": {
 			"runtimeConfig": {
 				"properties": {
-					"legacyContainerPrivateIp": {
+					"legacySysPrivateIp": {
 						"type": "string"
 					},
-					"legacyContainerPort": {
+					"legacySysPort": {
 						"type": "string"
 					}
 				},
 				"required": [
-					"legacyContainerPrivateIp",
-					"legacyContainerPort"
+					"legacySysPrivateIp",
+					"legacySysPort"
 				],
 				"type": "object",
 				"additionalProperties": false
 			},
 			"SysInfoResponse": {
+				"description": "SysInfoResponse: system information response interface",
 				"properties": {
 					"message": {
 						"type": "string"
@@ -38,35 +39,11 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"EncodeResult": {
-				"properties": {
-					"token": {
-						"type": "string"
-					},
-					"expires": {
-						"type": "number",
-						"format": "double"
-					},
-					"issued": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"required": [
-					"token",
-					"expires",
-					"issued"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"DefaultSessionTokenResponse": {
+			"DefaultResponse": {
+				"description": "DefaultResponse: default response interface",
 				"properties": {
 					"message": {
 						"type": "string"
-					},
-					"session": {
-						"$ref": "#/components/schemas/EncodeResult"
 					},
 					"statusCode": {
 						"type": "number",
@@ -75,16 +52,19 @@
 				},
 				"required": [
 					"message",
-					"session",
 					"statusCode"
 				],
 				"type": "object",
 				"additionalProperties": false
 			},
-			"DefaultResponse": {
+			"HealthCheckConnectionResponse": {
+				"description": "HealthCheckConnectionResponse: health check connection response interface",
 				"properties": {
 					"message": {
 						"type": "string"
+					},
+					"legacySystemResponse": {
+						"$ref": "#/components/schemas/DefaultResponse"
 					},
 					"statusCode": {
 						"type": "number",
@@ -93,6 +73,7 @@
 				},
 				"required": [
 					"message",
+					"legacySystemResponse",
 					"statusCode"
 				],
 				"type": "object",
@@ -130,109 +111,28 @@
 				"parameters": []
 			}
 		},
-		"/sign-in/{username}/{password}": {
+		"/health-check-connection": {
 			"post": {
-				"operationId": "GetMessage",
+				"operationId": "RunHealthCheckConnection",
 				"responses": {
 					"200": {
 						"description": "Ok",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/DefaultSessionTokenResponse"
+									"$ref": "#/components/schemas/HealthCheckConnectionResponse"
 								}
 							}
 						}
 					}
 				},
 				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "username",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "path",
-						"name": "password",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/sign-out/{username}/{password}": {
-			"post": {
-				"operationId": "GetMessage",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/DefaultSessionTokenResponse"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "username",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "path",
-						"name": "password",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/check-token/{token}": {
-			"post": {
-				"operationId": "GetMessage",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/DefaultResponse"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "token",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
+				"parameters": []
 			}
 		},
 		"/set-config/{legacyprivateip}/{legacyport}": {
 			"post": {
-				"operationId": "GetMessage",
+				"operationId": "SetContainerConfig",
 				"responses": {
 					"200": {
 						"description": "Ok",

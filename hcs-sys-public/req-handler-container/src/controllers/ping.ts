@@ -1,5 +1,5 @@
 import { Get, Route } from "tsoa";
-import { SysInfoResponse } from "../models/sys-info-response";
+import { SysInfoResponse } from "../response";
 import { currentRuntimeConfig } from "../config";
 
 @Route("")

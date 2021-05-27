@@ -8,9 +8,31 @@ The server uses swagger and shows the documentation at the `/docs` endpoint.
 
 - GET `/`: response: {message: "request handler says hello"}
 - GET `/docs`: response: swagger documentation
-- POST `/session`: payload: {token: "..."}, response: 200, 404
-- POST `/sign-in`: payload: {username: "...", password: "..."}, response: 200, 404
-- POST `/sign-up`: payload: {username: "...", password: "..."}, response: 200 or 404
+- POST `/health-check-connection`
+
+Response:
+
+```json
+{
+  "message": "...",
+  "statuscode": "...",
+  "legacySystemResponse": {
+    "message": "...",
+    "statuscode": "..."
+  }
+}
+```
+
+- POST `/set-config`: payload: {message: "...", statuscode: "..."}, response: 200, 404
+
+Response:
+
+```json
+{
+  "message": "...",
+  "statuscode": "..."
+}
+```
 
 ## Getting Started
 
