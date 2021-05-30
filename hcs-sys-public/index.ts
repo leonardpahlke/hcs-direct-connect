@@ -32,42 +32,43 @@ import {
  */
 const nameVpc = `${projectName}-vpc`;
 const vpc = new aws.ec2.Vpc(nameVpc, {
-  cidrBlock: "10.200.0.0/24",
+  cidrBlock: "10.0.0.0/24",
   tags: GetTags(nameVpc),
 });
 export const vpcId = vpc.id;
 
 // create subnets - "public-gateway" and "private-processing"
-const subnetPrivateProcessingName = `${nameVpc}-subnet-private-processing`;
+const subnetPrivateProcessingName = `${nameVpc}-sn-priv-proc`;
 const subnetPrivateProcessing = new aws.ec2.Subnet(
   subnetPrivateProcessingName,
   {
     vpcId: vpc.id,
-    cidrBlock: "10.200.200.0/24",
+    cidrBlock: "10.0.0.16/28",
     tags: GetTags(subnetPrivateProcessingName),
   }
 );
 const subnetPublicGatewayName = `${nameVpc}-subnet-public-gateway`;
 const subnetPublicGateway = new aws.ec2.Subnet(subnetPublicGatewayName, {
   vpcId: vpc.id,
-  cidrBlock: "10.200.100.0/24",
+  cidrBlock: "10.0.0.144/28",
   tags: GetTags(subnetPublicGatewayName),
 });
 
 // create interface for ec2 gateway instance
-const gatewayInterfaceName = `${projectName}-gw-network-interface`;
+const gatewayInterfaceName = `${projectName}-gw-net-interface`;
 const gatewayInterface = new aws.ec2.NetworkInterface(gatewayInterfaceName, {
   subnetId: subnetPrivateProcessing.id,
-  privateIps: ["10.200.100.1"],
+  privateIps: ["10.0.0.30"],
   tags: {
     Name: gatewayInterfaceName,
   },
 });
 
 // create ec2 gateway instance
+const AmazonLinux2AMIHVM = "ami-043097594a7df80ec";
 const gwWireGuardInstanceName = `${projectName}-wireguard-gw-instance`;
 const gwWireGuardInstance = new aws.ec2.Instance(gwWireGuardInstanceName, {
-  ami: "ami-005e54dee72cc1d00",
+  ami: AmazonLinux2AMIHVM,
   instanceType: "t2.micro",
   networkInterfaces: [
     {
@@ -94,7 +95,7 @@ export const ecrUrl = repo.repository.repositoryUrl;
  */
 
 // create log group to sort logs
-const nameContainerLogGroupReqHandler = `${clusterReqHandlerName}-log-group`;
+const nameContainerLogGroupReqHandler = `${clusterReqHandlerName}-logg`;
 const containerLogGroupReqHandler = new aws.cloudwatch.LogGroup(
   nameContainerLogGroupReqHandler,
   {
@@ -118,7 +119,7 @@ const clusterReqHandler = new awsx.ecs.Cluster(clusterReqHandlerName, {
 
 // Deploy a Fargate Service into the new ECS cluster.
 const serviceFargateReqHandler = new awsx.ecs.FargateService(
-  clusterReqHandlerName + "-service",
+  clusterReqHandlerName + "-svc",
   {
     cluster: clusterReqHandler,
     taskDefinitionArgs: {

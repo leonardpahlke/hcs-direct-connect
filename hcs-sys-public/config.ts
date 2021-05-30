@@ -1,17 +1,16 @@
-export const projectName = "hcs-direct-inner-public";
+export const projectName = "hcs";
 export const deployEnvironment = "dev";
-export const createdBy = "Leonard Pahlke";
 
 export function GetTags(name: string) {
   return {
     Name: name,
     ProjectName: projectName,
     DeployEnvironment: deployEnvironment,
-    CreatedBy: createdBy,
+    CreatedBy: "Leonard Pahlke",
   };
 }
 
-export const clusterReqHandlerName = projectName + "-cluster-request-handler";
+export const clusterReqHandlerName = projectName + "-cluster-req-han";
 
 // Config
 export const albClusterReqHandlerPort = 80;
