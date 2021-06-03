@@ -21,33 +21,31 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const request_promise_1 = __importDefault(require("request-promise"));
+const axios_1 = __importDefault(require("axios"));
 const tsoa_1 = require("tsoa");
 const config_1 = require("../config");
 let SignInController = class SignInController {
     runHealthCheckConnection() {
         return __awaiter(this, void 0, void 0, function* () {
+            const legacyPingEndpoint = `http://${config_1.currentRuntimeConfig.legacySysPrivateIp}:${config_1.currentRuntimeConfig.legacySysPort}/ping`;
             // send ping request to legacy container
-            return request_promise_1.default("http://" +
-                config_1.currentRuntimeConfig.legacyContainerPrivateIp +
-                ":" +
-                config_1.currentRuntimeConfig.legacyContainerPort +
-                "/ping")
-                .then(function () {
+            return axios_1.default
+                .get(legacyPingEndpoint)
+                .then(function (response) {
                 return {
                     message: "Request handler response",
                     legacySystemResponse: {
-                        message: "Legacy system response",
+                        message: "Legacy system response, " + response.statusText,
                         statusCode: 200,
                     },
                     statusCode: 200,
                 };
             })
-                .catch(function () {
+                .catch(function (error) {
                 return {
                     message: "Request handler response",
                     legacySystemResponse: {
-                        message: "Legacy system response error received",
+                        message: "Legacy system response error received, " + error.message,
                         statusCode: 404,
                     },
                     statusCode: 200,
@@ -63,6 +61,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SignInController.prototype, "runHealthCheckConnection", null);
 SignInController = __decorate([
-    tsoa_1.Route("/health-check-connection")
+    tsoa_1.Route("health-check-connection")
 ], SignInController);
 exports.default = SignInController;

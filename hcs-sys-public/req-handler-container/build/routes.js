@@ -27,7 +27,7 @@ router.post("/set-config/:legacyprivateip/:legacyport", (_req, res) => __awaiter
     const response = yield controller.setContainerConfig(_req.params.legacyprivateip, _req.params.legacyport);
     return res.send(response);
 }));
-router.post("/healt-check-connection", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/health-check-connection", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const controller = new health_check_connection_1.default();
     const response = yield controller.runHealthCheckConnection();
     res.status(response.statusCode);

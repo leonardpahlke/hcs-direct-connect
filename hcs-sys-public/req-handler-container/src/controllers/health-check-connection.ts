@@ -1,4 +1,4 @@
-import requestPromise from "request-promise";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { Post, Route } from "tsoa";
 import { currentRuntimeConfig as runtimeConfig } from "../config";
 import { HealthCheckConnectionResponse } from "../response";
@@ -10,22 +10,23 @@ export default class SignInController {
     const legacyPingEndpoint = `http://${runtimeConfig.legacySysPrivateIp}:${runtimeConfig.legacySysPort}/ping`;
 
     // send ping request to legacy container
-    return requestPromise(legacyPingEndpoint)
-      .then(function () {
+    return axios
+      .get(legacyPingEndpoint)
+      .then(function (response: AxiosResponse) {
         return {
           message: "Request handler response",
           legacySystemResponse: {
-            message: "Legacy system response",
+            message: "Legacy system response, " + response.statusText,
             statusCode: 200,
           },
           statusCode: 200,
         };
       })
-      .catch(function () {
+      .catch(function (error: AxiosError) {
         return {
           message: "Request handler response",
           legacySystemResponse: {
-            message: "Legacy system response error received",
+            message: "Legacy system response error received, " + error.message,
             statusCode: 404,
           },
           statusCode: 200,

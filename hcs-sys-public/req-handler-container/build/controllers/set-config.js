@@ -24,8 +24,8 @@ let SetConfigController = class SetConfigController {
     setContainerConfig(legacyprivateip, legacyport) {
         return __awaiter(this, void 0, void 0, function* () {
             config_1.changeConfig({
-                legacyContainerPrivateIp: legacyprivateip,
-                legacyContainerPort: legacyport,
+                legacySysPrivateIp: legacyprivateip,
+                legacySysPort: legacyport,
             });
             return {
                 message: "config set",

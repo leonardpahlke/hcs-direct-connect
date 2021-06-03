@@ -4,8 +4,8 @@ exports.changeConfig = exports.currentRuntimeConfig = exports.configSet = void 0
 // todo: secret_key should be stored in a secure location and read at runtime
 exports.configSet = false;
 exports.currentRuntimeConfig = {
-    legacyContainerPrivateIp: "localhost",
-    legacyContainerPort: "8050",
+    legacySysPrivateIp: "localhost",
+    legacySysPort: "8050",
 };
 /**
  * Change runtime configuration construct
