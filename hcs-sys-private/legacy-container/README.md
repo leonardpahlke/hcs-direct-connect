@@ -26,9 +26,9 @@ Response:
 
 ---
 
-- To build the container in dev: `docker build -f Dockerfile.dev -t hcs-legacy-dev .`
-- To build the container in prod: `docker build -f Dockerfile.prod -t hcs-legacy-prod .`
-- To run the container: `docker run -p 8000:8000 hcs-legacy-prod`
+- To build the container in dev: `docker build -f Dockerfile -t hcs-legacy-container .`
+- Use docker-compose to run the container `docker-compose up`
+- To run the container: `docker run -p 8050:8050 hcs-legacy-prod`
 
 ## References
 
