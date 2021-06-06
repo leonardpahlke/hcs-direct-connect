@@ -1,2 +1,6 @@
 config:
   aws:region: eu-central-1
+  hcs-sys-public:data:
+    albClusterReqHandlerPort: 80
+    clusterReqHandlerDesiredAmount: 1
+    clusterReqHandlerMemory: 128

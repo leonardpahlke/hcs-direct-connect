@@ -36,17 +36,17 @@ Response:
 
 ## Getting Started
 
+- Install dependencies `npm install`
 - Build the project: `npm run build`
 - Run local server: `node build/index.js` (edits will not appear after execution)
 - Run local server in dev mode: `npm run dev` (edits will appear after execution)
 
 ---
 
-- To build the container in dev: `docker build -f Dockerfile.dev -t hcs-req-handler-dev .`
-- To build the container in prod: `docker build -f Dockerfile.prod -t hcs-req-handler-prod .`
+- To build the container in dev: `docker build -f Dockerfile -t hcs-req-handler .`
+- Use docker-compose to run the container `docker-compose up`
 - To run the container: `docker run -p 8000:8000 hcs-req-handler-prod`
 
 ## References
 
-Used this blog post as a starting point: https://rsbh.dev/blog/rest-api-with-express-typescript
-and the next one: https://rsbh.dev/blog/rest-api-express-typescript-docker
+Used this [blog post](https://rsbh.dev/blog/rest-api-with-express-typescript) as a starting point and this [blog post](https://rsbh.dev/blog/rest-api-express-typescript-docker) for the Dockerfile.

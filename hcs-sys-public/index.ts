@@ -1,15 +1,34 @@
+import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import * as awsx from "@pulumi/awsx";
-import {
-  clusterReqHandlerMemory,
-  clusterReqHandlerDesiredAmount,
-} from "./config";
-import {
-  projectName,
-  GetTags,
-  clusterReqHandlerName,
-  albClusterReqHandlerPort,
-} from "./config";
+import { projectName, GetTags } from "../util";
+
+/**
+ * CONFIGURATION
+ */
+
+export const clusterReqHandlerName = projectName + "-cluster-req-han";
+
+/**
+ * CONFIGURATION
+ */
+
+// Get pulumi configuration to enable dynamic deployments
+let config = new pulumi.Config();
+
+// Structured configuration input https://www.pulumi.com/docs/intro/concepts/config/#structured-configuration
+interface Data {
+  albClusterReqHandlerPort: number;
+  clusterReqHandlerDesiredAmount: number;
+  clusterReqHandlerMemory: number;
+}
+
+let configData = config.requireObject<Data>("data");
+
+let albClusterReqHandlerPort = configData.albClusterReqHandlerPort || 80;
+let clusterReqHandlerDesiredAmount =
+  configData.clusterReqHandlerDesiredAmount || 1;
+let clusterReqHandlerMemory = configData.clusterReqHandlerMemory || 128;
 
 /**
  * 1. NETWORKING:
@@ -19,9 +38,9 @@ import {
  * EC2 Gateway - WireGuard gateway
  *
  * 2. ARCHIVING:
- * ECR - request handler repository
+ * ECR - request handler container image
  *
- * 3. PROCESSING:
+ * 3. CLUSTER:
  * ALB - application load balancer for ecs fargate tasks
  * ECS - elastic container cluster
  * Fargate - Fargate service task to run request-handler-container
@@ -85,13 +104,14 @@ const gwWireGuardInstance = new aws.ec2.Instance(gwWireGuardInstanceName, {
 /**
  * 2. ARCHIVING
  */
-// Create a ECR repository.
-const repo = new awsx.ecr.Repository(`${projectName}-ecr`);
-// And publish its URL, so we can push to it if we'd like.
-export const ecrUrl = repo.repository.repositoryUrl;
+// Create a ECR container image.
+const containerImage = awsx.ecs.Image.fromPath(
+  `${projectName}-ecr`,
+  "./req-handler-container"
+);
 
 /**
- * 3. PROCESSING
+ * 3. CLUSTER
  */
 
 // create log group to sort logs
@@ -99,7 +119,7 @@ const nameContainerLogGroupReqHandler = `${clusterReqHandlerName}-logg`;
 const containerLogGroupReqHandler = new aws.cloudwatch.LogGroup(
   nameContainerLogGroupReqHandler,
   {
-    retentionInDays: 7,
+    retentionInDays: 3,
     tags: GetTags(nameContainerLogGroupReqHandler),
   }
 );
@@ -118,23 +138,21 @@ const clusterReqHandler = new awsx.ecs.Cluster(clusterReqHandlerName, {
 });
 
 // Deploy a Fargate Service into the new ECS cluster.
-const serviceFargateReqHandler = new awsx.ecs.FargateService(
-  clusterReqHandlerName + "-svc",
-  {
-    cluster: clusterReqHandler,
-    taskDefinitionArgs: {
-      logGroup: containerLogGroupReqHandler,
-      containers: {
-        nginx: {
-          image: "nginx", // todo: reference ecr repository image
-          memory: clusterReqHandlerMemory,
-          portMappings: [albListenerReqHandler],
-        },
+new awsx.ecs.FargateService(clusterReqHandlerName + "-svc", {
+  cluster: clusterReqHandler,
+  taskDefinitionArgs: {
+    logGroup: containerLogGroupReqHandler,
+    containers: {
+      reqHandler: {
+        image: containerImage,
+        memory: clusterReqHandlerMemory,
+        portMappings: [albListenerReqHandler],
       },
     },
-    desiredCount: clusterReqHandlerDesiredAmount,
-  }
-);
+  },
+  desiredCount: clusterReqHandlerDesiredAmount,
+});
 
-// Export the application load balancer's address so that it's easy to access.
+// Export the application load balancer's address & gateway arn
 export const urlAlbReqHandler = albListenerReqHandler.endpoint.hostname;
+export const gwWireGuardInstanceArn = gwWireGuardInstance.arn;

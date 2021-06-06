@@ -1,6 +1,7 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import * as awsx from "@pulumi/awsx";
+import { GetTags } from "../util";
 
 /**
  * CONFIGURATION
@@ -31,6 +32,7 @@ const role = new aws.iam.Role(projectName + "-lmb-role", {
   assumeRolePolicy: aws.iam.assumeRolePolicyForPrincipal({
     Service: "lambda.amazonaws.com",
   }),
+  tags: GetTags(projectName + "-lmb-role"),
 });
 
 // Create policy to allow the lambda to write logs to cloudwatch
@@ -76,6 +78,7 @@ const endpoint = new awsx.apigateway.API(
           environment: {
             variables: { ENDPOINT: requestHandlerEndpoint },
           },
+          tags: GetTags(projectName + "-lmb"),
         }),
       },
     ],

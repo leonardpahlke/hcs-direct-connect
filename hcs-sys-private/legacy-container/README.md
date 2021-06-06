@@ -32,5 +32,4 @@ Response:
 
 ## References
 
-Used this blog post as a starting point: https://rsbh.dev/blog/rest-api-with-express-typescript
-and the next one: https://rsbh.dev/blog/rest-api-express-typescript-docker
+Used this [blog post](https://rsbh.dev/blog/rest-api-with-express-typescript) as a starting point and this [blog post](https://rsbh.dev/blog/rest-api-express-typescript-docker) for the Dockerfile.
