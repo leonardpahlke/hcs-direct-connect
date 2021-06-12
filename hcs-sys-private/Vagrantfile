@@ -1,42 +1,77 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+require 'yaml'
 
+
+# Check plugin installations needed to build the VM
 unless Vagrant.has_plugin?("vagrant-docker-compose")
   system("vagrant plugin install vagrant-docker-compose")
   puts "Dependencies installed, please try the command again."
   exit
 end
 
+unless Vagrant.has_plugin?("vagrant-digitalocean")
+  system("vagrant plugin install vagrant-digitalocean")
+  puts "Dependencies installed, please try the command again."
+  exit
+end
+
+
+# Configure Virtual Machine
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/bionic64"
-
   # Variables
-  legacy_container_port = 8050
-  project_name = "hcs-sys-private-cloud"
+  LEGACY_CONTAINER_PORT = 8050
+  PROJECT_NAME = "hcs-sys-private-cloud"
+  PRIVATE_KEY_PATH = '~/.ssh/id_ed25519'
+  DO_BOX_URL = "https://github.com/devopsgroup-io/vagrant-digitalocean/raw/master/box/digital_ocean.box"
+  TOKEN = begin
+    YAML.load_file('token.yaml').fetch('digital_ocean_token')
+  rescue Errno::ENOENT, KeyError
+    '.'
+  end
 
-  # Copy file to VM
-  config.vm.synced_folder "legacy-container/", "/vagrant"
+  config.vm.define "droplet-hcs-sys-private-cloud" do |config|
+    config.vm.provider :digital_ocean do |provider, override|
+      override.vm.box = 'digital_ocean'
+      override.vm.box_url = DO_BOX_URL
+      override.vm.allowed_synced_folder_types = :rsync
 
-  # Make port accessible
-  config.vm.network(:forwarded_port, guest: legacy_container_port, host: legacy_container_port)
+      # Digital Ocean Access Token 
+      provider.token = TOKEN
+      # SSH File to access the VM
+      override.ssh.private_key_path = PRIVATE_KEY_PATH
+      provider.ssh_key_name = "hcssh"
+      
+      # OS
+      provider.image = 'ubuntu-20-04-x64'
+      # Hardware specifications
+      provider.size = 's-1vcpu-1gb'
+      # Datacenter Region
+      provider.region = 'fra1'
+    end
 
-  # Run inline shell - update system and install wireguard, generate private key
-  config.vm.provision :shell, inline: "apt-get update"
-  config.vm.provision :shell, inline: "sudo apt-get -y install wireguard"
-  config.vm.provision :shell, inline: "wg genkey > private"
-  # config.vm.provision :shell, inline: "wg pubkey < private"
-  # https://www.wireguard.com/quickstart/
+    # Copy file to VM
+    config.vm.synced_folder "legacy-container/", "/vagrant"
 
-  # Install docker and docker-compose
-  config.vm.provision :docker
-  config.vm.provision :docker_compose, env: { "PORT" => "#{legacy_container_port}" }, yml: ["/vagrant/docker-compose.yaml"], rebuild: true, project_name: "#{project_name}", run: "always"
+    # Make port accessible
+    config.vm.network(:forwarded_port, guest: LEGACY_CONTAINER_PORT, host: LEGACY_CONTAINER_PORT)
 
-  # Create a forwarded port mapping which allows access to a specific port
-  # within the machine from a port on the host machine and only allow access
-  # via 127.0.0.1 to disable public access
-  # config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+    # Run inline shell - update system and install wireguard, generate private key
+    config.vm.provision :shell, inline: "apt-get update -y"
+    config.vm.provision :shell, inline: "sudo apt-get -y install wireguard"
+    config.vm.provision :shell, inline: "wg genkey > private"
 
-  # Create a private network, which allows host-only access to the machine
-  #  using a specific IP.
-  # config.vm.network "private_network", ip: "192.168.33.10"
+    # Install docker and docker-compose
+    config.vm.provision :docker
+    config.vm.provision :docker_compose, env: { "PORT" => "#{LEGACY_CONTAINER_PORT}" }, yml: ["/vagrant/docker-compose.yaml"], rebuild: true, project_name: "#{PROJECT_NAME}", run: "always"
+  
+    # Create a forwarded port mapping which allows access to a specific port
+    # within the machine from a port on the host machine and only allow access
+    # via 127.0.0.1 to disable public access
+    # config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+
+    # Create a private network, which allows host-only access to the machine
+    #  using a specific IP.
+    # config.vm.network "private_network", ip: "192.168.33.10"
+  end
 end

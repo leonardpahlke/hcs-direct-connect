@@ -1,10 +1,13 @@
+GREEN='\033[0;32m'
+NC='\033[0m'
+
 echo
 echo
-echo "START HCS-SYS-PUBLIC - DESTROY.SH"
+echo "${GREEN}START HCS-SYS-PUBLIC - DESTROY.SH${NC}"
 echo
 
 pulumi destroy -f
 
 echo
-echo "FINISHED HCS-SYS-PUBLIC - DESTROY.SH"
+echo "${GREEN}FINISHED HCS-SYS-PUBLIC - DESTROY.SH${NC}"
 echo

@@ -1,6 +1,11 @@
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+
 echo
 echo 
-echo "START HCS-SYS-PUBLIC - DEPLOY.SH ..."
+echo "${GREEN}START HCS-SYS-PUBLIC - DEPLOY.SH ...${NC}"
 echo
 albClusterReqHandlerPort=80
 clusterReqHandlerDesiredAmount=1
@@ -19,9 +24,9 @@ then
     echo "updatd variable clusterReqHandlerMemory to: $clusterReqHandlerMemory"
 elif [ $# -eq 0 ] 
 then
-    echo "No arguments supplied, use default arguemnts"
+    echo "${YELLOW}No arguments supplied, use default arguemnts${NC}"
 else
-    echo "Not enough arguments supplied, use defaults"
+    echo "${RED}Not enough arguments supplied, use defaults${NC}"
 fi
 # pulumi config set --path 'data.nums[2]' 3
 
@@ -33,9 +38,9 @@ echo "Pulumi configuration set"
 echo
 
 echo "Deploy Pulumi project..."
-pulumi up
+pulumi up -y
 echo "Pulumi project deployed"
 
 echo
-echo "FINISHED HCS-SYS-PUBLIC - DEPLOY.SH"
+echo "${GREEN}FINISHED HCS-SYS-PUBLIC - DEPLOY.SH${NC}"
 echo

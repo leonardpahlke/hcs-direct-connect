@@ -1,2 +1,5 @@
 config:
   aws:region: eu-west-1
+  hcs-sys-platform:data:
+    lambdaTimeoutInSeconds: 60
+    requestHandlerEndpoint: https://www.google.com

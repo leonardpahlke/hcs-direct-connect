@@ -1,3 +1,6 @@
+LIGHT_BLUE='\033[1;34m'
+NC='\033[0m'
+
 # This file will deploy the HCS system to the configured system.
 # The deployment is based on the deployment diagram shown in the README.md file.
 # The folowing three systems are getting deployed.
@@ -16,66 +19,68 @@ folder_hcs_sys_platform="hcs-sys-platform"
 
 project_name="hcs"
 
+echo
+echo "${LIGHT_BLUE}DEPLOY-MAIN: START WITH HYBRID-CLOUD-DEPLOYMENT...${NC}"
+echo
+
 # DEPLOYMENT
 
 # --------
 # 1. create hcs-sys-private-cloud setup useing vagrant
-echo "DEPLOY-MAIN: 1. create hcs-sys-private-cloud setup useing vagrant"
-cd $folder_hcs_sys_private_cloud
-vagrant up
+echo "${LIGHT_BLUE}DEPLOY-MAIN: 1. create hcs-sys-private-cloud setup useing vagrant${NC}"
+cd $folder_hcs_sys_private_cloud/
+./deploy.sh
 cd ..
-echo
+
 
 # --------
 # 2. create hcs-sys-public-cloud setup useing pulumi
-echo "DEPLOY-MAIN: 2. create hcs-sys-public-cloud setup useing pulumi"
-# ...
-echo
+echo "${LIGHT_BLUE}DEPLOY-MAIN: 2. create hcs-sys-public-cloud setup useing pulumi${NC}"
+#$folder_hcs_sys_public_cloud/deploy.sh
 
 # --------
 # 3. create hcs-sys-platform-cloud setup useing pulumi
-echo "DEPLOY-MAIN: 3. create hcs-sys-platform-cloud setup useing pulumi"
-# ...
-echo
+echo "${LIGHT_BLUE}DEPLOY-MAIN: 3. create hcs-sys-platform-cloud setup useing pulumi${NC}"
+cd $folder_hcs_sys_platform/
+./deploy.sh
+cd ..
 
 # --------
 # 4. install hcs-sys-public-cloud gateway
-echo "DEPLOY-MAIN: 4. install hcs-sys-public-cloud gateway"
+echo "${LIGHT_BLUE}DEPLOY-MAIN: 4. install hcs-sys-public-cloud gateway${NC}"
 # ...
-echo
 
 # --------
 # 5. create private keys
 # 5.1. create private key hcs-sys-public-cloud
-echo "DEPLOY-MAIN: 5.1. create private key hcs-sys-public-cloud"
+echo "${LIGHT_BLUE}DEPLOY-MAIN: 5.1. create private key hcs-sys-public-cloud${NC}"
 # ...
-echo
 
 # 5.2. create private key hcs-sys-private-cloud
-echo "DEPLOY-MAIN: 5.2. create private key hcs-sys-private-cloud"
+echo "${LIGHT_BLUE}DEPLOY-MAIN: 5.2. create private key hcs-sys-private-cloud${NC}"
 # ...
-echo
 
 # --------
 # 6. create public keys
 # 6.1. create public key hcs-sys-public-cloud
-echo "DEPLOY-MAIN: 6.1. create public key hcs-sys-public-cloud"
+echo "${LIGHT_BLUE}DEPLOY-MAIN: 6.1. create public key hcs-sys-public-cloud${NC}"
 # ...
-echo
 
 # 6.2. create public key hcs-sys-private-cloud
-echo "DEPLOY-MAIN: 6.2. create public key hcs-sys-private-cloud"
+echo "${LIGHT_BLUE}DEPLOY-MAIN: 6.2. create public key hcs-sys-private-cloud${NC}"
 # ...
-echo
 
 # --------
 # 7. create vpn-tunnel beween private- and public-cloud
-echo "DEPLOY-MAIN: 7. create vpn-tunnel beween private- and public-cloud"
+echo "${LIGHT_BLUE}DEPLOY-MAIN: 7. create vpn-tunnel beween private- and public-cloud${NC}"
 # ...
-echo
 
 # --------
 # 8. check connection (use other file "check-connection.sh")
-echo "DEPLOY-MAIN: 8. check connection"
+echo "${LIGHT_BLUE}DEPLOY-MAIN: 8. check connection${NC}"
 # ...
+
+
+echo
+echo "${LIGHT_BLUE}FINISHED WITH HYBRID-CLOUD-DEPLOYMENT${NC}"
 echo

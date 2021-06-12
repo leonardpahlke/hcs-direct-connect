@@ -4,3 +4,4 @@
 hcs-sys-public/req-handler-container/node_modules/
 hcs-sys-platform/log-aggregator/node_modules/
 hcs-sys-private/legacy-container/node_modules/
+hcs-sys-private/token.yaml
