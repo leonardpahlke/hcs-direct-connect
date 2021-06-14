@@ -7,7 +7,7 @@ echo
 echo 
 echo "${GREEN}START HCS-SYS-PUBLIC - DEPLOY.SH ...${NC}"
 echo
-albClusterReqHandlerPort=80
+albClusterReqHandlerPort=8000
 clusterReqHandlerDesiredAmount=1
 clusterReqHandlerMemory=128
 

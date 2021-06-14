@@ -2,6 +2,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import * as awsx from "@pulumi/awsx";
 import { projectName, GetTags } from "../util";
+import { XXX_GATEWAY_PUBLIC_KEY } from "./config";
 
 /**
  * CONFIGURATION
@@ -25,7 +26,7 @@ interface Data {
 
 let configData = config.requireObject<Data>("data");
 
-let albClusterReqHandlerPort = configData.albClusterReqHandlerPort || 80;
+let albClusterReqHandlerPort = configData.albClusterReqHandlerPort || 8000;
 let clusterReqHandlerDesiredAmount =
   configData.clusterReqHandlerDesiredAmount || 1;
 let clusterReqHandlerMemory = configData.clusterReqHandlerMemory || 128;
@@ -58,29 +59,68 @@ export const vpcId = vpc.id;
 
 // create subnets - "public-gateway" and "private-processing"
 const subnetPrivateProcessingName = `${nameVpc}-sn-priv-proc`;
+const subnetPrivateProcessingCidr = "10.0.0.16/28";
 const subnetPrivateProcessing = new aws.ec2.Subnet(
   subnetPrivateProcessingName,
   {
     vpcId: vpc.id,
-    cidrBlock: "10.0.0.16/28",
+    cidrBlock: subnetPrivateProcessingCidr,
     tags: GetTags(subnetPrivateProcessingName),
   }
 );
 const subnetPublicGatewayName = `${nameVpc}-subnet-public-gateway`;
+const subnetPublicGatewayCidr = "10.0.0.144/28";
 const subnetPublicGateway = new aws.ec2.Subnet(subnetPublicGatewayName, {
   vpcId: vpc.id,
-  cidrBlock: "10.0.0.144/28",
+  cidrBlock: subnetPublicGatewayCidr,
+  mapPublicIpOnLaunch: true,
   tags: GetTags(subnetPublicGatewayName),
+});
+
+const sgGatewayName = `${nameVpc}-sg-gateway`;
+const gwSecurityGroup = new aws.ec2.SecurityGroup(sgGatewayName, {
+  description: "Allow TLS inbound traffic",
+  vpcId: vpc.id,
+  ingress: [
+    {
+      description: "TLS from VPC",
+      fromPort: 443,
+      toPort: 443,
+      protocol: "tcp",
+      cidrBlocks: [vpc.cidrBlock],
+    },
+    {
+      description: "SSH from Anywhere",
+      fromPort: 22,
+      toPort: 22,
+      protocol: "tcp",
+      cidrBlocks: ["0.0.0.0/0"],
+    },
+  ],
+  egress: [
+    {
+      fromPort: 0,
+      toPort: 0,
+      protocol: "-1",
+      cidrBlocks: ["0.0.0.0/0"],
+    },
+  ],
+  tags: GetTags(sgGatewayName),
+});
+
+// create a key-pair to connect to ec2 gateway instance
+const gatewayKeyPairName = `${projectName}-gw-key-pair`;
+const gatewayKeyPair = new aws.ec2.KeyPair(gatewayKeyPairName, {
+  publicKey: XXX_GATEWAY_PUBLIC_KEY,
+  tags: GetTags(gatewayKeyPairName),
 });
 
 // create interface for ec2 gateway instance
 const gatewayInterfaceName = `${projectName}-gw-net-interface`;
 const gatewayInterface = new aws.ec2.NetworkInterface(gatewayInterfaceName, {
-  subnetId: subnetPrivateProcessing.id,
-  privateIps: ["10.0.0.30"],
-  tags: {
-    Name: gatewayInterfaceName,
-  },
+  subnetId: subnetPublicGateway.id,
+  securityGroups: [gwSecurityGroup.id],
+  tags: GetTags(gatewayInterfaceName),
 });
 
 // create ec2 gateway instance
@@ -95,9 +135,13 @@ const gwWireGuardInstance = new aws.ec2.Instance(gwWireGuardInstanceName, {
       deviceIndex: 0,
     },
   ],
+  sourceDestCheck: false,
+  keyName: gatewayKeyPair.id,
   creditSpecification: {
     cpuCredits: "unlimited",
   },
+  //vpcSecurityGroupIds: [gwSecurityGroup.id],
+  //associatePublicIpAddress: true,
   tags: GetTags(gwWireGuardInstanceName),
 });
 
@@ -110,12 +154,24 @@ const containerImage = awsx.ecs.Image.fromPath(
   "./req-handler-container"
 );
 
+const snRouteTableName = `${subnetPrivateProcessingName}-rt`;
+const snRouteTable = new aws.ec2.RouteTable(snRouteTableName, {
+  vpcId: vpc.id,
+  routes: [
+    {
+      cidrBlock: subnetPrivateProcessingCidr,
+      networkInterfaceId: gatewayInterface.id,
+    },
+  ],
+  tags: GetTags(snRouteTableName),
+});
+
 /**
  * 3. CLUSTER
  */
 
 // create log group to sort logs
-const nameContainerLogGroupReqHandler = `${clusterReqHandlerName}-logg`;
+const nameContainerLogGroupReqHandler = `${clusterReqHandlerName}-log-group`;
 const containerLogGroupReqHandler = new aws.cloudwatch.LogGroup(
   nameContainerLogGroupReqHandler,
   {
@@ -155,4 +211,4 @@ new awsx.ecs.FargateService(clusterReqHandlerName + "-svc", {
 
 // Export the application load balancer's address & gateway arn
 export const urlAlbReqHandler = albListenerReqHandler.endpoint.hostname;
-export const gwWireGuardInstanceArn = gwWireGuardInstance.arn;
+export const gwWireGuardInstancePublicIp = gwWireGuardInstance.publicIp;

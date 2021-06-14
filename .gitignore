@@ -2,6 +2,11 @@
 /node_modules/
 */node_modules/
 hcs-sys-public/req-handler-container/node_modules/
+hcs-sys-public/config.ts
 hcs-sys-platform/log-aggregator/node_modules/
+hcs-sys-platform/.vscode
 hcs-sys-private/legacy-container/node_modules/
+hcs-sys-private/.vagrant
 hcs-sys-private/token.yaml
+.vagrant
+.vscode

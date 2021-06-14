@@ -36,7 +36,9 @@ cd ..
 # --------
 # 2. create hcs-sys-public-cloud setup useing pulumi
 echo "${LIGHT_BLUE}DEPLOY-MAIN: 2. create hcs-sys-public-cloud setup useing pulumi${NC}"
-#$folder_hcs_sys_public_cloud/deploy.sh
+cd $folder_hcs_sys_public_cloud/
+./deploy.sh
+cd ..
 
 # --------
 # 3. create hcs-sys-platform-cloud setup useing pulumi

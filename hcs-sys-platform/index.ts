@@ -13,13 +13,18 @@ let config = new pulumi.Config();
 // Structured configuration input https://www.pulumi.com/docs/intro/concepts/config/#structured-configuration
 interface Data {
   lambdaTimeoutInSeconds: number;
-  requestHandlerEndpoint: string;
+  requestHandlerHostname: string;
+  requestHandlerPath: string;
+  requestHandlerPort: number;
 }
 
 let configData = config.requireObject<Data>("data");
 
-let lambdaTimeoutInSeconds = configData.lambdaTimeoutInSeconds || 60;
-let requestHandlerEndpoint = configData.requestHandlerEndpoint || "";
+let lambdaTimeoutInSeconds = configData.lambdaTimeoutInSeconds || 10;
+let requestHandlerHostname = configData.requestHandlerHostname || "localhost";
+let requestHandlerPath =
+  configData.requestHandlerPath || "/health-check-connection";
+let requestHandlerPort = configData.requestHandlerPort || 8000;
 let subProjectName = projectName + "-platform";
 
 /**
@@ -73,7 +78,11 @@ const endpoint = new awsx.apigateway.API(
           role: role.arn,
           // send lambda environemnt variables
           environment: {
-            variables: { ENDPOINT: requestHandlerEndpoint },
+            variables: {
+              HOSTNAME: requestHandlerHostname,
+              PORT: `${requestHandlerPort}`,
+              PATH: requestHandlerPath,
+            },
           },
           tags: GetTags(subProjectName + "-lmb"),
         }),

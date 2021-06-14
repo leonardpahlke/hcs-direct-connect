@@ -1,6 +1,21 @@
-const https = require("https");
+const http = require("http");
 // get health-check url from environment variables
-let url = process.env.ENDPOINT;
+let hostname = process.env.HOSTNAME;
+let port = process.env.PORT;
+let path = process.env.PATH;
+
+const data = JSON.stringify({});
+
+const options = {
+  hostname: hostname,
+  port: port,
+  path: path,
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Content-Length": data.length,
+  },
+};
 
 /**
  * This handler function is the entry point for the health-checker lambda function
@@ -12,23 +27,28 @@ exports.handler = async function (event) {
   console.log("START HEALTH-CHECK");
   // send health-check request to req-handler endpoint
   const promise = new Promise(function (resolve, reject) {
-    https
-      .post(url, (res) => {
-        resolve({
-          statusCode: res.statusCode,
-          body: JSON.stringify({
-            message: `HEALTH-CHECK response: ${res.body}`,
-          }),
-        });
-      })
-      .on("error", (e) => {
-        reject({
-          statusCode: 500,
-          body: JSON.stringify({
-            error: `HEALTH-CHECK error response: ${Error(e)}`,
-          }),
-        });
+    const req = http.request(options, (res) => {
+      console.log("received response");
+      resolve({
+        statusCode: res.statusCode,
+        body: JSON.stringify({
+          message: `HEALTH-CHECK response: ${res.body}`,
+        }),
       });
+    });
+
+    req.on("error", (error) => {
+      console.error(error);
+      reject({
+        statusCode: 500,
+        body: JSON.stringify({
+          error: `HEALTH-CHECK error response: ${error}`,
+        }),
+      });
+    });
+
+    req.write(data);
+    req.end();
   });
   console.log("END HEALTH-CHECK");
   return promise;
