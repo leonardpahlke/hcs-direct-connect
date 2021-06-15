@@ -2,13 +2,13 @@ import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import * as awsx from "@pulumi/awsx";
 import { projectName, GetTags } from "../util";
-import { XXX_GATEWAY_PUBLIC_KEY } from "./config";
+// import { XXX_GATEWAY_PUBLIC_KEY } from "./config";
 
 /**
  * CONFIGURATION
  */
 
-export const clusterReqHandlerName = projectName + "-cluster-req-han";
+const clusterReqHandlerName = projectName + "-cluster-req-han";
 
 /**
  * CONFIGURATION
@@ -22,6 +22,7 @@ interface Data {
   albClusterReqHandlerPort: number;
   clusterReqHandlerDesiredAmount: number;
   clusterReqHandlerMemory: number;
+  keyPairName: string;
 }
 
 let configData = config.requireObject<Data>("data");
@@ -30,6 +31,7 @@ let albClusterReqHandlerPort = configData.albClusterReqHandlerPort || 8000;
 let clusterReqHandlerDesiredAmount =
   configData.clusterReqHandlerDesiredAmount || 1;
 let clusterReqHandlerMemory = configData.clusterReqHandlerMemory || 128;
+let keyPairName = configData.keyPairName || "hcs-gw-key";
 
 /**
  * 1. NETWORKING:
@@ -55,9 +57,8 @@ const vpc = new aws.ec2.Vpc(nameVpc, {
   cidrBlock: "10.0.0.0/24",
   tags: GetTags(nameVpc),
 });
-export const vpcId = vpc.id;
 
-// create subnets - "public-gateway" and "private-processing"
+// Create subnets - "public-gateway" and "private-processing"
 const subnetPrivateProcessingName = `${nameVpc}-sn-priv-proc`;
 const subnetPrivateProcessingCidr = "10.0.0.16/28";
 const subnetPrivateProcessing = new aws.ec2.Subnet(
@@ -68,7 +69,7 @@ const subnetPrivateProcessing = new aws.ec2.Subnet(
     tags: GetTags(subnetPrivateProcessingName),
   }
 );
-const subnetPublicGatewayName = `${nameVpc}-subnet-public-gateway`;
+const subnetPublicGatewayName = `${nameVpc}-subnet-public-gw`;
 const subnetPublicGatewayCidr = "10.0.0.144/28";
 const subnetPublicGateway = new aws.ec2.Subnet(subnetPublicGatewayName, {
   vpcId: vpc.id,
@@ -77,100 +78,160 @@ const subnetPublicGateway = new aws.ec2.Subnet(subnetPublicGatewayName, {
   tags: GetTags(subnetPublicGatewayName),
 });
 
-const sgGatewayName = `${nameVpc}-sg-gateway`;
-const gwSecurityGroup = new aws.ec2.SecurityGroup(sgGatewayName, {
+// Create a internet gateway and attach it to the VPC to get internet access
+const internetGatewayName = `${nameVpc}-igw`;
+const igw = new aws.ec2.InternetGateway(internetGatewayName, {
+  vpcId: vpc.id,
+  tags: GetTags(internetGatewayName),
+});
+
+// Create a security group which is attach to the Gateway Instance and functions as a firewall
+const sgGatewayName = `${nameVpc}-sg-nat`;
+const natSecurityGroup = new aws.ec2.SecurityGroup(sgGatewayName, {
   description: "Allow TLS inbound traffic",
   vpcId: vpc.id,
   ingress: [
     {
-      description: "TLS from VPC",
-      fromPort: 443,
-      toPort: 443,
-      protocol: "tcp",
-      cidrBlocks: [vpc.cidrBlock],
+      description:
+        "Allow inbound HTTP traffic from servers in the private subnet",
+      fromPort: 80,
+      toPort: 80,
+      protocol: "TCP",
+      cidrBlocks: [subnetPrivateProcessingCidr],
     },
     {
-      description: "SSH from Anywhere",
+      description:
+        "Allow inbound HTTPS traffic from servers in the private subnet",
+      fromPort: 443,
+      toPort: 443,
+      protocol: "TCP",
+      cidrBlocks: [subnetPrivateProcessingCidr],
+    },
+    {
+      description:
+        "Allow inbound SSH access to the NAT instance from your home network (over the internet gateway) ",
       fromPort: 22,
       toPort: 22,
-      protocol: "tcp",
+      protocol: "TCP",
+      cidrBlocks: ["0.0.0.0/0"],
+    },
+    {
+      description: "Allow inbound UDP access to wireguard port",
+      fromPort: 51820,
+      toPort: 51820,
+      protocol: "UDP",
       cidrBlocks: ["0.0.0.0/0"],
     },
   ],
   egress: [
     {
-      fromPort: 0,
-      toPort: 0,
-      protocol: "-1",
+      description: "Allow outbound HTTP access to the internet",
+      fromPort: 80,
+      toPort: 80,
+      protocol: "TCP",
+      cidrBlocks: ["0.0.0.0/0"],
+    },
+    {
+      description: "Allow outbound HTTPS access to the internet",
+      fromPort: 443,
+      toPort: 443,
+      protocol: "TCP",
+      cidrBlocks: ["0.0.0.0/0"],
+    },
+    {
+      description: "Allow outbound UDP access to wireguard port",
+      fromPort: 51820,
+      toPort: 51820,
+      protocol: "UDP",
       cidrBlocks: ["0.0.0.0/0"],
     },
   ],
   tags: GetTags(sgGatewayName),
 });
 
-// create a key-pair to connect to ec2 gateway instance
-const gatewayKeyPairName = `${projectName}-gw-key-pair`;
-const gatewayKeyPair = new aws.ec2.KeyPair(gatewayKeyPairName, {
-  publicKey: XXX_GATEWAY_PUBLIC_KEY,
-  tags: GetTags(gatewayKeyPairName),
-});
-
-// create interface for ec2 gateway instance
-const gatewayInterfaceName = `${projectName}-gw-net-interface`;
-const gatewayInterface = new aws.ec2.NetworkInterface(gatewayInterfaceName, {
+// Create interface for ec2 gateway instance (AWS Elastic Network Interface (ENI))
+const natENIName = `${projectName}-nat-eni`;
+const natENI = new aws.ec2.NetworkInterface(natENIName, {
   subnetId: subnetPublicGateway.id,
-  securityGroups: [gwSecurityGroup.id],
-  tags: GetTags(gatewayInterfaceName),
+  securityGroups: [natSecurityGroup.id],
+  sourceDestCheck: false,
+  tags: GetTags(natENIName),
 });
 
-// create ec2 gateway instance
-const AmazonLinux2AMIHVM = "ami-043097594a7df80ec";
-const gwWireGuardInstanceName = `${projectName}-wireguard-gw-instance`;
-const gwWireGuardInstance = new aws.ec2.Instance(gwWireGuardInstanceName, {
-  ami: AmazonLinux2AMIHVM,
+// Create EC2 gateway instance which will redirect traffic thorugh a VPN-Tunnel to WireGuard
+const AmiUbuntuHVM2004 = "ami-05f7491af5eef733a";
+const natInstanceName = `${projectName}-nat-instance`;
+const natInstance = new aws.ec2.Instance(natInstanceName, {
+  ami: AmiUbuntuHVM2004,
   instanceType: "t2.micro",
   networkInterfaces: [
     {
-      networkInterfaceId: gatewayInterface.id,
+      networkInterfaceId: natENI.id,
       deviceIndex: 0,
     },
   ],
-  sourceDestCheck: false,
-  keyName: gatewayKeyPair.id,
+  keyName: keyPairName,
   creditSpecification: {
     cpuCredits: "unlimited",
   },
-  //vpcSecurityGroupIds: [gwSecurityGroup.id],
-  //associatePublicIpAddress: true,
-  tags: GetTags(gwWireGuardInstanceName),
+  tags: GetTags(natInstanceName),
 });
+
+// Create a RouteTable to redirect traffic from the private-subnet to the gateway-subnet
+const snRouteTableNamePublic = `${subnetPublicGatewayName}-rt`;
+const snPublicRouteTable = new aws.ec2.RouteTable(snRouteTableNamePublic, {
+  vpcId: vpc.id,
+  routes: [
+    {
+      cidrBlock: "0.0.0.0/0",
+      gatewayId: igw.id,
+    },
+  ],
+  tags: GetTags(snRouteTableNamePublic),
+});
+// Associate the Route-Table to the public subnet
+const snPublicRouteTableAssociation = new aws.ec2.RouteTableAssociation(
+  `${snRouteTableNamePublic}-asso`,
+  {
+    subnetId: subnetPublicGateway.id,
+    routeTableId: snPublicRouteTable.id,
+  }
+);
+
+const snRouteTableNamePrivate = `${subnetPrivateProcessingName}-rt`;
+const snPrivateRouteTable = new aws.ec2.RouteTable(snRouteTableNamePrivate, {
+  vpcId: vpc.id,
+  routes: [
+    {
+      cidrBlock: "0.0.0.0/0",
+      instanceId: natInstance.id,
+    },
+  ],
+  tags: GetTags(snRouteTableNamePrivate),
+});
+// Associate the Route-Table to the private subnet
+const snPrivateRouteTableAssociation = new aws.ec2.RouteTableAssociation(
+  `${snRouteTableNamePrivate}-asso`,
+  {
+    subnetId: subnetPrivateProcessing.id,
+    routeTableId: snPrivateRouteTable.id,
+  }
+);
 
 /**
  * 2. ARCHIVING
  */
-// Create a ECR container image.
+// Create a ECR container image which is getting used in the fargate task-definition
 const containerImage = awsx.ecs.Image.fromPath(
   `${projectName}-ecr`,
   "./req-handler-container"
 );
 
-const snRouteTableName = `${subnetPrivateProcessingName}-rt`;
-const snRouteTable = new aws.ec2.RouteTable(snRouteTableName, {
-  vpcId: vpc.id,
-  routes: [
-    {
-      cidrBlock: subnetPrivateProcessingCidr,
-      networkInterfaceId: gatewayInterface.id,
-    },
-  ],
-  tags: GetTags(snRouteTableName),
-});
-
 /**
  * 3. CLUSTER
  */
 
-// create log group to sort logs
+// Create a log group in CloudWatch to accumulate logs
 const nameContainerLogGroupReqHandler = `${clusterReqHandlerName}-log-group`;
 const containerLogGroupReqHandler = new aws.cloudwatch.LogGroup(
   nameContainerLogGroupReqHandler,
@@ -180,7 +241,9 @@ const containerLogGroupReqHandler = new aws.cloudwatch.LogGroup(
   }
 );
 
-// create an Application Load Balancer (ALB) which creates a public accessible endpoint for us to use
+// Create an application load balancer (ALB) & listener
+//  that has a publicly accessible endpoint
+//  needed to gain access to the ecs cluster
 const albListenerReqHandler = new awsx.lb.ApplicationListener(
   `${clusterReqHandlerName}-alb`,
   { port: albClusterReqHandlerPort }
@@ -209,6 +272,12 @@ new awsx.ecs.FargateService(clusterReqHandlerName + "-svc", {
   desiredCount: clusterReqHandlerDesiredAmount,
 });
 
-// Export the application load balancer's address & gateway arn
-export const urlAlbReqHandler = albListenerReqHandler.endpoint.hostname;
-export const gwWireGuardInstancePublicIp = gwWireGuardInstance.publicIp;
+/**
+ * EXPORT INFORMATION
+ * - urlAlbReqHandler: This endpoint is needed by the hcs-sys-platform to send requests
+ * - gwWireGuardInstancePublicIp: The IP is needed to configure wireguard
+ */
+
+// Export the application load balancer's address & gateway ip
+export const albHostReqHandler = albListenerReqHandler.endpoint.hostname;
+export const natInstancePublicIp = natInstance.publicIp;

@@ -10,6 +10,9 @@ echo
 albClusterReqHandlerPort=8000
 clusterReqHandlerDesiredAmount=1
 clusterReqHandlerMemory=128
+# Name of the key that is getting used to log in to the ec2 instance
+keyPairName="hcs-nat-key"
+awsregion="eu-central-1"
 
 if [ $# -eq 3 ] 
 then
@@ -28,12 +31,27 @@ then
 else
     echo "${RED}Not enough arguments supplied, use defaults${NC}"
 fi
-# pulumi config set --path 'data.nums[2]' 3
+
+#echo "Create key-pair to connect to EC2 Instance"
+# Create EC2 key-pair and create a local copy
+#aws ec2 create-key-pair --region $awsregion --key-name $keyPairName --query "KeyMaterial" --output yaml > $keyPairName.pem
+# Check if key got created correct
+#keypairMaterial=`yq eval ".KeyPairs.[] | .KeyMaterial" $keyPairName.yaml`
+# Write key into new file
+#echo keypairMaterial > $keyPairName.pem
+# Update read permissions
+#chmod 400 $keyPairName.pem
+# Move new key to ~.ssh folder
+#mv -f $keyPairName.pem ~/.ssh/$keyPairName.pem
+# Delete temp file
+#rm $keyPairName.yaml
+#echo "Key-pair '$keyPairName' created"
 
 echo "Set pulumi configuration..."
 pulumi config set --path 'data.albClusterReqHandlerPort' $albClusterReqHandlerPort
 pulumi config set --path 'data.clusterReqHandlerDesiredAmount' $clusterReqHandlerDesiredAmount
 pulumi config set --path 'data.clusterReqHandlerMemory' $clusterReqHandlerMemory
+pulumi config set --path 'data.keyPairName' $keyPairName
 echo "Pulumi configuration set"
 echo
 

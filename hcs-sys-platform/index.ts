@@ -12,7 +12,6 @@ let config = new pulumi.Config();
 
 // Structured configuration input https://www.pulumi.com/docs/intro/concepts/config/#structured-configuration
 interface Data {
-  lambdaTimeoutInSeconds: number;
   requestHandlerHostname: string;
   requestHandlerPath: string;
   requestHandlerPort: number;
@@ -20,12 +19,13 @@ interface Data {
 
 let configData = config.requireObject<Data>("data");
 
-let lambdaTimeoutInSeconds = configData.lambdaTimeoutInSeconds || 10;
 let requestHandlerHostname = configData.requestHandlerHostname || "localhost";
 let requestHandlerPath =
   configData.requestHandlerPath || "/health-check-connection";
 let requestHandlerPort = configData.requestHandlerPort || 8000;
+
 let subProjectName = projectName + "-platform";
+let lambdaTimeoutInSeconds = 10;
 
 /**
  * SERVICE DEFINITIONS

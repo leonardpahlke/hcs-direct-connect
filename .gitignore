@@ -3,6 +3,8 @@
 */node_modules/
 hcs-sys-public/req-handler-container/node_modules/
 hcs-sys-public/config.ts
+hcs-sys-public/hcs-gw-key.pem
+hcs-sys-public/hcs-gw-key.yaml
 hcs-sys-platform/log-aggregator/node_modules/
 hcs-sys-platform/.vscode
 hcs-sys-private/legacy-container/node_modules/

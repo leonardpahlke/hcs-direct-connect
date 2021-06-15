@@ -7,21 +7,18 @@ echo
 echo 
 echo "${GREEN}START HCS-SYS-PLATFORM - DEPLOY.SH ...${NC}"
 echo
-lambdaTimeoutInSeconds=10
 requestHandlerHostname="hcs-cluster-req-han-alb-c1d317a-81317706.eu-central-1.elb.amazonaws.com"
 requestHandlerPath="/health-check-connection"
 requestHandlerPort=8000
 
-if [ $# -eq 4 ] 
+if [ $# -eq 3 ] 
 then
     echo "Arguments supplied update defaults"
 
-    $lambdaTimeoutInSeconds=$1
-    $requestHandlerHostname=$2
-    $requestHandlerPath=$3
-    $requestHandlerPort=$4
+    $requestHandlerHostname=$1
+    $requestHandlerPath=$2
+    $requestHandlerPort=$3
 
-    echo "updatd variable lambdaTimeoutInSeconds to: $lambdaTimeoutInSeconds"
     echo "updatd variable requestHandlerHostname to: $requestHandlerHostname"
     echo "updatd variable requestHandlerPath to: $requestHandlerPath"
     echo "updatd variable requestHandlerPort to: $requestHandlerPort"
@@ -33,7 +30,6 @@ else
 fi
 
 echo "Set pulumi configuration..."
-pulumi config set --path 'data.lambdaTimeoutInSeconds' $lambdaTimeoutInSeconds
 pulumi config set --path 'data.requestHandlerHostname' $requestHandlerHostname
 pulumi config set --path 'data.requestHandlerPath' $requestHandlerPath
 pulumi config set --path 'data.requestHandlerPort' $requestHandlerPort

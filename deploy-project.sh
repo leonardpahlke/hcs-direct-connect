@@ -38,38 +38,48 @@ cd ..
 echo "${LIGHT_BLUE}DEPLOY-MAIN: 2. create hcs-sys-public-cloud setup useing pulumi${NC}"
 cd $folder_hcs_sys_public_cloud/
 ./deploy.sh
+hcs_sys_public_albHostReqHandler=`pulumi stack output albHostReqHandler`
 cd ..
 
 # --------
 # 3. create hcs-sys-platform-cloud setup useing pulumi
 echo "${LIGHT_BLUE}DEPLOY-MAIN: 3. create hcs-sys-platform-cloud setup useing pulumi${NC}"
 cd $folder_hcs_sys_platform/
-./deploy.sh
+./deploy.sh hcs_sys_public_albHostReqHandler
+hcs_sys_platform_endpointUrl=`pulumi stack output endpointUrl`
+cd ..
+
+# todo... invoke with three variables: $requestHandlerHostname=$1, $requestHandlerPath=$2, $requestHandlerPort=$3
+
+
+# --------
+# 4. get public-ip adresses
+# 4.1. get vm public-ip adress hcs-sys-public-cloud
+echo "${LIGHT_BLUE}DEPLOY-MAIN: 4.1. get vm ip adresses hcs-sys-public-cloud${NC}"
+cd $folder_hcs_sys_public_cloud/
+hcs_sys_public_natInstancePublicIp=`pulumi stack output natInstancePublicIp`
 cd ..
 
 # --------
-# 4. install hcs-sys-public-cloud gateway
-echo "${LIGHT_BLUE}DEPLOY-MAIN: 4. install hcs-sys-public-cloud gateway${NC}"
+# 4.2. get vm public-ip adress hcs-sys-private-cloud
+echo "${LIGHT_BLUE}DEPLOY-MAIN: 4.2. get vm ip adresses hcs-sys-private-cloud${NC}"
 # ...
 
 # --------
-# 5. create private keys
-# 5.1. create private key hcs-sys-public-cloud
-echo "${LIGHT_BLUE}DEPLOY-MAIN: 5.1. create private key hcs-sys-public-cloud${NC}"
-# ...
-
-# 5.2. create private key hcs-sys-private-cloud
-echo "${LIGHT_BLUE}DEPLOY-MAIN: 5.2. create private key hcs-sys-private-cloud${NC}"
-# ...
+# 5. install hcs-sys-public-cloud gateway
+echo "${LIGHT_BLUE}DEPLOY-MAIN: 5. install hcs-sys-public-cloud gateway${NC}"
+cd $folder_hcs_sys_public_cloud/
+./nat-gw-install.sh <vmPublicIp>
+cd ..
 
 # --------
-# 6. create public keys
-# 6.1. create public key hcs-sys-public-cloud
-echo "${LIGHT_BLUE}DEPLOY-MAIN: 6.1. create public key hcs-sys-public-cloud${NC}"
+# 6. get keys
+# 6.1. get private key hcs-sys-public-cloud
+echo "${LIGHT_BLUE}DEPLOY-MAIN: 6.1. get private and public keys hcs-sys-public-cloud${NC}"
 # ...
 
-# 6.2. create public key hcs-sys-private-cloud
-echo "${LIGHT_BLUE}DEPLOY-MAIN: 6.2. create public key hcs-sys-private-cloud${NC}"
+# 6.2. get private key hcs-sys-private-cloud
+echo "${LIGHT_BLUE}DEPLOY-MAIN: 6.2. get private and public keys hcs-sys-platform${NC}"
 # ...
 
 # --------
@@ -80,8 +90,7 @@ echo "${LIGHT_BLUE}DEPLOY-MAIN: 7. create vpn-tunnel beween private- and public-
 # --------
 # 8. check connection (use other file "check-connection.sh")
 echo "${LIGHT_BLUE}DEPLOY-MAIN: 8. check connection${NC}"
-# ...
-
+./check-connection.sh hcs_sys_platform_endpointUrl
 
 echo
 echo "${LIGHT_BLUE}FINISHED WITH HYBRID-CLOUD-DEPLOYMENT${NC}"

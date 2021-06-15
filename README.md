@@ -16,3 +16,11 @@ The following diagram shows the folder structure of the project. The arrows indi
 The diagram shown below gives an idea of the software architecture of this project.
 
 ![Software Architecture](./assets/BA-05-Verteilungssicht-2.png)
+
+# Requirements
+
+- AWS credentails need to get configured first
+- DigitalOcean Token need to get set (more info under hcs-sys-private/README.md)
+- DigitalOcean Token need to get set (more info under hcs-sys-private/README.md)
+- IaC-Tools Pulumi, Vagrant needs to get installed
+- Docker needs get installed and the Docker-Daemon needs to run (docker images get pushed directly to AWS and get build locally first)

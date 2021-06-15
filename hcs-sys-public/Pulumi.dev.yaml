@@ -4,3 +4,7 @@ config:
     albClusterReqHandlerPort: 8000
     clusterReqHandlerDesiredAmount: 1
     clusterReqHandlerMemory: 128
+    gwkeyname: hcs-gw-key
+    keyPairIdName: hcs-gw-key
+    keyPairName: hcs-nat-key
+    keypairId: key-02974903877bbf5a3
