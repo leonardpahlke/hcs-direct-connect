@@ -11,7 +11,7 @@ import { projectName, GetTags } from "../util";
 const clusterReqHandlerName = projectName + "-cluster-req-han";
 
 /**
- * CONFIGURATION
+ * CONFIGURATIONa
  */
 
 // Get pulumi configuration to enable dynamic deployments
