@@ -1,0 +1,13 @@
+# Need to set variables: interface_file
+---
+- hosts: all
+  become: true
+
+  tasks:
+    - copy:
+        src: '~/{{ interface_file }}'
+        dest: /etc/wireguard/'{{ interface_file }}'
+    
+    - name: Start WireGuard interface
+      ansible.builtin.shell: 
+        cmd: wg-quick up wg0

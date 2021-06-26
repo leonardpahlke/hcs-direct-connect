@@ -15,9 +15,9 @@ if [ $# -eq 3 ]
 then
     echo "Arguments supplied update defaults"
 
-    $requestHandlerHostname=$1
-    $requestHandlerPath=$2
-    $requestHandlerPort=$3
+    requestHandlerHostname=$1
+    requestHandlerPath=$2
+    requestHandlerPort=$3
 
     echo "updatd variable requestHandlerHostname to: $requestHandlerHostname"
     echo "updatd variable requestHandlerPath to: $requestHandlerPath"

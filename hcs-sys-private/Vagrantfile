@@ -19,6 +19,7 @@ end
 
 # Configure Virtual Machine
 Vagrant.configure("2") do |config|
+  #config.vm.box_download_insecure = true
   # Variables
   LEGACY_CONTAINER_PORT = 8050
   PROJECT_NAME = "hcs-sys-private-cloud"

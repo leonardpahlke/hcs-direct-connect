@@ -12,3 +12,5 @@ For example `sh deploy.sh <...>`
 - $1: albClusterReqHandlerPort: number;
 - $2: clusterReqHandlerDesiredAmount: number;
 - $3: clusterReqHandlerMemory: number;
+
+https://www.digitalocean.com/community/tutorials/how-to-use-ansible-to-automate-initial-server-setup-on-ubuntu-18-04

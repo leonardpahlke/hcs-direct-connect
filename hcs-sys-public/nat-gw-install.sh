@@ -17,15 +17,15 @@ if [ $# -eq 1 ]
 then
     echo "Arguments supplied update variables"
 
-    $vmPublicIp=&1
+    vmPublicIp=$1
 
     echo "updatd variable vmPublicIp to: $vmPublicIp"
 else
-    echo "${RED}Not enough arguments supplied, cannot use defaults${NC}"
+    echo "${RED}No Public-Ip supplied and cannot use defaults${NC}"
     exit 3
 fi
 
-ssh -i $vmKeyFile $vmUser@$vmPublicIp
+ssh -i $vmKeyFile $vmUser@$vmPublicIp || { echo "${RED} FAILED: Could not connect to VM 'ssh -i $vmKeyFile $vmUser@$vmPublicIp' ${NC}" ; exit 1; }
 echo "Update VM"
 sudo apt update -y
 echo "Install wireguard"
@@ -33,7 +33,7 @@ sudo apt install wireguard
 echo "Allow UDP traffic to VPN port"
 sudo ufw allow 51820/udp
 echo "Allow redirection of network packets at kernel level"
-sudo echo net.ipv4.ip_forward=1 > /etc/sysctl.conf
+sudo net.ipv4.ip_forward=1 > /etc/sysctl.conf
 echo "Apply changes"
 sudo sysctl -p
 echo "Create public- and private-key for vpn connection"

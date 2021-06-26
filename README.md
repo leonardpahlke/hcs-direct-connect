@@ -17,7 +17,7 @@ The diagram shown below gives an idea of the software architecture of this proje
 
 ![Software Architecture](./assets/BA-05-Verteilungssicht-2.png)
 
-# Requirements
+## Requirements
 
 - AWS credentails need to get configured first
 - DigitalOcean Token need to get set (more info under hcs-sys-private/README.md)

@@ -2,16 +2,11 @@ import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import * as awsx from "@pulumi/awsx";
 import { projectName, GetTags } from "../util";
-// import { XXX_GATEWAY_PUBLIC_KEY } from "./config";
-
-/**
- * CONFIGURATION
- */
 
 const clusterReqHandlerName = projectName + "-cluster-req-han";
 
 /**
- * CONFIGURATIONa
+ * CONFIGURATION
  */
 
 // Get pulumi configuration to enable dynamic deployments

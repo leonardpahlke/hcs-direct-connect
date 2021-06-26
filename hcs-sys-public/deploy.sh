@@ -27,9 +27,9 @@ then
     echo "updatd variable clusterReqHandlerMemory to: $clusterReqHandlerMemory"
 elif [ $# -eq 0 ] 
 then
-    echo "${YELLOW}No arguments supplied, use default arguemnts${NC}"
+    echo "${YELLOW}No arguments supplied; use default arguments${NC}"
 else
-    echo "${RED}Not enough arguments supplied, use defaults${NC}"
+    echo "${RED}Not enough arguments supplied; use defaults${NC}"
 fi
 
 #echo "Create key-pair to connect to EC2 Instance"

@@ -21,9 +21,9 @@ if [ $# -eq 3 ]
 then
     echo "Arguments supplied update variables"
 
-    $serverPrivateKey=&1
-    $clientPublicKey=&2
-    $publicIpServer=&3
+    serverPrivateKey=&1
+    clientPublicKey=&2
+    publicIpServer=&3
 
     echo "updatd variable serverPrivateKey to: $serverPrivateKey"
     echo "updatd variable clientPublicKey to: $clientPublicKey"
