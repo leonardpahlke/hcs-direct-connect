@@ -12,3 +12,5 @@ hcs-sys-private/.vagrant
 hcs-sys-private/token.yaml
 .vagrant
 .vscode
+wg0.conf
+hosts

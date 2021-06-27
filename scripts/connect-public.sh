@@ -1,3 +1,4 @@
+# This script is getting used to manually connect to one of the virtual machines that got createdr
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'

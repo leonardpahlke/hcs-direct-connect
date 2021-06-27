@@ -1,6 +1,0 @@
-[servers]
-reqhandler ansible_host=18.156.163.18
-legacysys ansible_host=178.128.193.248
-
-[servers:vars]
-ansible_python_interpreter=/usr/bin/python3

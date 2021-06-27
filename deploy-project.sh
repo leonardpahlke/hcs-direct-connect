@@ -19,6 +19,8 @@ folder_hcs_sys_public_cloud="hcs-sys-public"
 folder_hcs_sys_private_cloud="hcs-sys-private"
 folder_hcs_sys_platform="hcs-sys-platform"
 
+project_name="hcs"
+
 # Ansible playbook variables
 ansible_inventory_file="hosts"
 ansible_inv_nat_gw_ref="reqhandler"
@@ -30,29 +32,28 @@ nat_gw_pk="~/.ssh/hcs-nat-key.pem"
 
 requestHandlerPath="/health-check-connection"
 requestHandlerPort=8000
+legacyComponentPort=8050
 
 # VPN Connection variables
 vpnPort=51280
 vpnClientIp="10.50.0.2"
 vpnClientIpCidrStart="10.50.0.1"
-interface_name="wg0"
-interface_file="$interface_name.conf"
 
+hcs_wg_install_file="wg_install.sh"
 
-# CONFIGURATION
-
-project_name="hcs"
 
 echo
 echo "${LIGHT_BLUE}DEPLOY-MAIN: START WITH HYBRID-CLOUD-DEPLOYMENT...${NC}"
 echo
 
 
-echo "CHECK Installations"
+echo "${GREEN}CHECK Installations${NC}"
 docker ps || { echo "${RED} FAILED: Docker is not running ${NC}" ; exit 1; }
 doctl account get || { echo "${RED} FAILED: DOCTL is not setup ${NC}" ; exit 1; }
 
 echo "${GREEN}...proceed with deployment${NC}"
+echo
+
 
 # DEPLOYMENT
 
@@ -76,7 +77,7 @@ cd ..
 # 3. create hcs-sys-platform-cloud setup useing pulumi
 echo "${LIGHT_BLUE}DEPLOY-MAIN: 3. create hcs-sys-platform-cloud setup useing pulumi${NC}"
 cd $folder_hcs_sys_platform/
-./deploy.sh hcs_sys_public_albHostReqHandler $requestHandlerPath $requestHandlerPort
+./deploy.sh $hcs_sys_public_albHostReqHandler $requestHandlerPath $requestHandlerPort
 hcs_sys_platform_endpointUrl=`pulumi stack output endpointUrl`
 cd ..
 
@@ -130,46 +131,38 @@ cd ..
 
 
 # --------
-# 7.1. create vpn-tunnel beween private-cloud (client)
-echo "${LIGHT_BLUE}DEPLOY-MAIN: 7.1. create vpn-tunnel beween private-cloud${NC}"
-# Create local interface config files
-echo `[Interface]
-PrivateKey = $client_private_key
-Address = $vpnClientIp/24
-DNS = 8.8.8.8
-
-[Peer]
-PublicKey = $server_public_key
-AllowedIPs = 0.0.0.0/0
-Endpoint = $hcs_sys_private_legacySysPublicIp:$vpnPort
-PersistentKeepalive = 25
-` > ~/$interface_file
-chmod +X ~/$interface_file
-ansible-playbook playbook-hcs-wg.yaml -l $ansible_inv_legacy_sys_ref -u $nat_gw_user -i $ansible_inventory_file --private-key $nat_gw_pk -e "interface_file=$interface_file"
+# 7.1. create vpn-tunnel private-cloud (client)
+echo "${LIGHT_BLUE}DEPLOY-MAIN: 7.1. create vpn-tunnel private-cloud${NC}"
+cd $folder_hcs_sys_private_cloud/
+vagrant ssh -c "sudo sh ./vagrant/$hcs_wg_install_file wg0.conf $client_private_key $server_public_key $vpnClientIp $vpnPort $hcs_sys_private_legacySysPublicIp"
+cd ..
 
 # --------
-# 7.2. create vpn-tunnel beween public-cloud (server)
-echo "${LIGHT_BLUE}DEPLOY-MAIN: 7.2. create vpn-tunnel beween public-cloud (server)${NC}"
+# 7.2. create vpn-tunnel public-cloud (server)
+echo "${LIGHT_BLUE}DEPLOY-MAIN: 7.2. create vpn-tunnel public-cloud (server)${NC}"
 # Create local interface config files
-echo `[Interface]
+echo "[Interface]
 PrivateKey = $server_private_key
 Address = $vpnClientIpCidrStart/24
 ListenPort = $vpnPort
 
-PostUp = iptables -A FORWARD -i $interface_name -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-PostDown = iptables -D FORWARD -i $interface_name -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
 
 [Peer]
 PublicKey = $client_public_key
-AllowedIPs = $vpnClientIp/32
-` > ~/$interface_file
-chmod +X ~/$interface_file
-ansible-playbook playbook-hcs-public-wg.yaml -l $ansible_inv_nat_gw_ref -u $nat_gw_user -i $ansible_inventory_file --private-key $nat_gw_pk -e "interface_file=$interface_file"
+AllowedIPs = $vpnClientIp/32" > ./wg0.conf
+chmod +x ./wg0.conf
+ansible-playbook playbook-hcs-wg.yaml -l $ansible_inv_nat_gw_ref -u $nat_gw_user -i $ansible_inventory_file --private-key $nat_gw_pk
 
 # --------
 # 8. check connection (use other file "check-connection.sh")
 echo "${LIGHT_BLUE}DEPLOY-MAIN: 8. check connection${NC}"
-./check-connection.sh hcs_sys_platform_endpointUrl
+echo "Set configuration for hcs-public to reach private-cloud"
+curl -X POST "$hcs_sys_public_albHostReqHandler/set-config/$hcs_sys_private_legacySysPublicIp/$legacyComponentPort"
+
+echo "Run health-check"
+./scripts/check-connection.sh $hcs_sys_platform_endpointUrl
 
 echo
 echo "${LIGHT_BLUE}FINISHED WITH HYBRID-CLOUD-DEPLOYMENT${NC}"

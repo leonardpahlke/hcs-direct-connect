@@ -24,9 +24,9 @@ then
     echo "updatd variable requestHandlerPort to: $requestHandlerPort"
 elif [ $# -eq 0 ] 
 then
-    echo "${YELLOW}No arguments supplied, use default arguemnts${NC}"
+    echo "${YELLOW}HCS-SYS-PLATFORM No arguments supplied, use default arguemnts${NC}"
 else
-    echo "${RED}Not enough arguments supplied, use defaults${NC}"
+    echo "${RED}HCS-SYS-PLATFORM Not enough arguments supplied, use defaults${NC}"
 fi
 
 echo "Set pulumi configuration..."
