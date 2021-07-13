@@ -1,0 +1,3 @@
+name: hcs-sys-public-gcp
+runtime: go
+description: HCS-DIRECT-CONNECT Public Cloud System on GCP
