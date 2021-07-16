@@ -244,42 +244,13 @@ func main() {
 				PortRange:  pulumi.String(e.portRange),
 				IpAddress:  hcsVpnStaticIp.Address,
 				Target:     hcsVpnGateway.ID(),
+				Region:     pulumi.String(PROJECT_GCP_REGION),
 			})
 			if err != nil {
 				return err
 			}
 			forwardingRules = append(forwardingRules, fwdRule)
 		}
-
-		// frEsp, err := compute.NewForwardingRule(ctx, createName("fr-esp"), &compute.ForwardingRuleArgs{
-		// 	IpProtocol: pulumi.String("ESP"),
-		// 	IpAddress:  hcsVpnStaticIp.Address,
-		// 	Region:     pulumi.String(PROJECT_GCP_REGION),
-		// 	Target:     hcsVpnGateway.ID(),
-		// })
-		// if err != nil {
-		// 	return err
-		// }
-		// frUdp500, err := compute.NewForwardingRule(ctx, createName("fr-udp-500"), &compute.ForwardingRuleArgs{
-		// 	IpProtocol: pulumi.String("UDP"),
-		// 	PortRange:  pulumi.String("500"),
-		// 	IpAddress:  hcsVpnStaticIp.Address,
-		// 	Region:     pulumi.String(PROJECT_GCP_REGION),
-		// 	Target:     hcsVpnGateway.ID(),
-		// })
-		// if err != nil {
-		// 	return err
-		// }
-		// frUdp4500, err := compute.NewForwardingRule(ctx, createName("fr-udp-4500"), &compute.ForwardingRuleArgs{
-		// 	IpProtocol: pulumi.String("UDP"),
-		// 	PortRange:  pulumi.String("4500"),
-		// 	IpAddress:  hcsVpnStaticIp.Address,
-		// 	Region:     pulumi.String(PROJECT_GCP_REGION),
-		// 	Target:     hcsVpnGateway.ID(),
-		// })
-		// if err != nil {
-		// 	return err
-		// }
 
 		// * * * * * * * * * * * * * * * * * * * * * * * *
 		// VPN-TUNNEL
@@ -292,14 +263,9 @@ func main() {
 			Region:                 pulumi.String(PROJECT_GCP_REGION),
 			RemoteTrafficSelectors: pulumi.StringArray{pulumi.String(conf.OnpremSubnetCidr)},
 			SharedSecret:           pulumi.String(conf.OnpremSharedSecret),
-		}, pulumi.DependsOn(
-			forwardingRules,
-		// 	[]pulumi.Resource{
-		// 	frEsp,
-		// 	frUdp500,
-		// 	frUdp4500,
-		// },
-		))
+			TargetVpnGateway:       hcsVpnGateway.ID(),
+			LocalTrafficSelectors:  pulumi.StringArray{pulumi.String(conf.GcpVpcSubnetCidr)},
+		}, pulumi.DependsOn(forwardingRules))
 		if err != nil {
 			return err
 		}

@@ -61,9 +61,9 @@ def hcs2_provision_deploy():
             gcp_api_cidr=gcp_api_cidr
         ))
     provisioner_pub.deploy()
-    gcp_tunnel_ipv4 = provisioner_pub.getOutputVar("tunnel_ip")
-    gcp_req_handler_vm_ipv4 = provisioner_pub.getOutputVar("")
-    print(f"gcp_tunnel_ipv4: {gcp_tunnel_ipv4}")
+    #gcp_tunnel_ipv4 = provisioner_pub.getOutputVar("tunnel_ip")
+    #gcp_req_handler_vm_ipv4 = provisioner_pub.getOutputVar("")
+    #print(f"gcp_tunnel_ipv4: {gcp_tunnel_ipv4}")
 
     # * * * * * * * * * * *
     # DEPLOY HCS-PLATFORM
@@ -83,14 +83,15 @@ def hcs2_provision_destroy():
         on_premSharedSecret="",)).destroy()
     ProvisionerHcsPriv2(
         meta=meta, input=InProvisionerHcsPriv2()).destroy()
-    os.chdir(
-        f"{pathlib.Path(__file__).parent.resolve()}/{folder_hcs_sys_platform}")
-    subprocess.call("./destroy.sh", shell=True)
-    os.chdir(pathlib.Path(__file__).parent.resolve())
+
+    # os.chdir(
+    #    f"{pathlib.Path(__file__).parent.resolve()}/{folder_hcs_sys_platform}")
+    #subprocess.call("./destroy.sh", shell=True)
+    # os.chdir(pathlib.Path(__file__).parent.resolve())
 
 
 # - - - - - - - - - - - - - - - - - - - - -
-# Connect to one of the created resources
+# Connect to one of the created resources // does not work - use the script ~/hcs/connect-hcs-2.sh
 def hcs2_provision_connect():
     print_blue("START HCS-CONNECT")
     method = input(
@@ -106,10 +107,9 @@ def hcs2_provision_connect():
         raise SystemExit(f"Invalid input received:[{method}], exit")
 
 
+# Execute this file and select deploy / destroy - connect via the script ~/hcs/connect-hcs-2.sh to created resources
 if __name__ == "__main__":
     print_blue("RUN HCS-2-PROVISION")
-    # method = input(
-    #    "Select method (a/b/c) \n- [a]: deploy the system \n- [b]: destroy the system \n- [c]: connect to one of the created resources \n>> ")
     method = input(
         f"Select method [{yelw_str('a')}, {yelw_str('b')}] \n- [{yelw_str('a')}]: deploy the system \n- [{yelw_str('b')}]: destroy the system \n>> ")
 
@@ -117,8 +117,6 @@ if __name__ == "__main__":
         hcs2_provision_deploy()
     elif method == "b":
         hcs2_provision_destroy()
-    # elif method == "c":
-    #    hcs2_provision_connect()
     else:
         raise SystemExit(f"Invalid method selected:[{method}], exit")
 

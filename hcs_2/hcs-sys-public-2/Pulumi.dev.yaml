@@ -4,9 +4,9 @@ config:
     GcpApiCidr': 199.36.153.4/30
     GcpVmReqHandlerPort': 8000
     GcpVpcSubnetCidr': 10.10.0.0/20
-    OnpremPeerIp': 157.245.26.103
+    OnpremPeerIp': 157.245.26.240
     OnpremSharedSecret':
-      secure: AAABADyamDKgRdfoYZcCFag9mYdfSNPxlB+ysmA/o8zJ1udJOiMVRlFmcop89BngNQ+oDUPq
+      secure: AAABAIM5Mk/iJHQCApvINDdFVpL+WwX+uYhyVLtGVTqXQdomy6RcAhtO5yYfjv6sLfdVewsT
     OnpremSubnetCidr': 10.194.0.0/20
   hcs-sys-public-gcp:data:
     GcpApiCidr: 199.36.153.4/30

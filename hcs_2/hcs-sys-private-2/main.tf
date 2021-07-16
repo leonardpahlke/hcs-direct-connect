@@ -10,6 +10,10 @@ resource "digitalocean_vpc" "vpc" {
 # * * * * * * * * * * * * * * * * * * * *
 # DROPLET, VM INSTANCE
 # DOC: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/droplet
+# FLOATING PUBLIC IP
+resource "digitalocean_floating_ip" "hcs_floating_ip" {
+  region = var.region
+}
 resource "digitalocean_droplet" "legacy_vm" {
   image              = var.vm_image
   name               = "hcs-legacy-vm"
@@ -29,12 +33,11 @@ resource "digitalocean_droplet" "legacy_vm" {
   #     "apt-get update && apt-get install -y strongswan iptables ipsec-tools dnsutils traceroute bind9 vim telnet"
   #   ]
   # }
+  depends_on = [
+    digitalocean_floating_ip.hcs_floating_ip
+  ]
 }
 
-# FLOATING PUBLIC IP
-resource "digitalocean_floating_ip" "hcs_floating_ip" {
-  region = var.region
-}
 resource "digitalocean_floating_ip_assignment" "hcs_floating_ip_asignment" {
   ip_address = digitalocean_floating_ip.hcs_floating_ip.ip_address
   droplet_id = digitalocean_droplet.legacy_vm.id
@@ -44,7 +47,7 @@ resource "digitalocean_floating_ip_assignment" "hcs_floating_ip_asignment" {
 # FIREWALL
 # DOC: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/firewall
 resource "digitalocean_firewall" "legacy_vm_firewall" {
-  name = "hcs-legacy-vm-fw"
+  name        = "hcs-legacy-vm-fw"
   droplet_ids = [digitalocean_droplet.legacy_vm.id]
   # Inbound rules
   inbound_rule {

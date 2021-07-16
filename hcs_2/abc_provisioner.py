@@ -39,16 +39,18 @@ class Provisioner(ABC):
         pass
 
     # sysCall - run a system call (like 'ls')
-    def sysCall(self, cmd, path=""):
+    def sysCall(self, cmd, path="", wait_for_response=False):
         if path is not "":
             os.chdir(path)
-        result = subprocess.run(cmd.split(" "), stdout=subprocess.PIPE)
+        result = subprocess.run(
+            cmd.split(" "), stdout=subprocess.PIPE if wait_for_response else None)
         if result.returncode is not 0:
             print()
             logging.debug(result.stdout)
             logging.error(result.stderr)
             raise SystemExit("Error occured, sysCall not successfull, exit")
-        return result.stdout.decode('utf-8')
+        response = result.stdout.decode('utf-8') if wait_for_response else ""
+        return response
 
     # Returns the path of a subfolder
     def getSubFolderPath(self, subfolder="") -> str:

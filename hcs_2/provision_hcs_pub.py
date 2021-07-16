@@ -70,27 +70,27 @@ class ProvisionerHcsPub2(provisioner.Provisioner):
     # Destroy pulumi project
     def destroy(self):
         logging.info(f"START DESTROYING {self.name} ...")
-        self.sysCall(f"pulumi destroy -f {self.stack_flag}",
+        self.sysCall(f"pulumi destroy {self.stack_flag} -f -y",
                      self.getSubFolderPath(self.repo_name))
         logging.info(f"FINISHED DESTROYING {self.name}")
 
-    # Connect to request handler vm
+    # Connect to request handler vm // does not work - use the script ~/hcs/connect-hcs-2.sh
     def connect(self, id):
         logging.info(f"Connect to {self.name} REQUEST_HANDLER VM")
         zone = self.sysCall("pulumi stack output zone {self.stack_flag}",
-                            self.getSubFolderPath(self.repo_name))
+                            self.getSubFolderPath(self.repo_name), True)
         instance_name = self.sysCall(
-            "pulumi stack output instance_name {self.stack_flag}", self.getSubFolderPath(self.repo_name))
+            "pulumi stack output instance_name {self.stack_flag}", self.getSubFolderPath(self.repo_name), True)
         project_name = self.sysCall(
-            "pulumi stack output project_name {self.stack_flag}", self.getSubFolderPath(self.repo_name))
+            "pulumi stack output project_name {self.stack_flag}", self.getSubFolderPath(self.repo_name), True)
 
         logging.info(f"With info: {zone}, {instance_name}, {project_name}")
         self.sysCall(
             f"gcloud beta compute ssh --zone {zone} {instance_name} --tunnel-through-iap --project {project_name}", self.getSubFolderPath(self.repo_name))
 
-    # Get one of the outputs created by deploying the stack
+    # Get one of the outputs created by deploying the stack (pulumi outputs)
     def getOutputVar(self, key) -> str:
-        return self.sysCall(f"pulumi stack output {key}")
+        return self.sysCall(f"pulumi stack output {key}", True)
 
     # setPulumiDataConfig - set pulumi config
     def setPulumiDataConfig(self, pulumiDataKey, value, secret=False):

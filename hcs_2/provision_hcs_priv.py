@@ -46,17 +46,17 @@ class ProvisionerHcsPriv2(provisioner.Provisioner):
                      self.getSubFolderPath(self.repo_name))
         logging.info(f"FINISHED DESTROYING {self.name}")
 
-    # Connect to legacy vm
+    # Connect to legacy vm // does not work - use the script ~/hcs/connect-hcs-2.sh
     def connect(self, id):
         logging.info(f"START CONNECT {self.name} LegacySystem VM")
         vmPublicIpv4 = self.sysCall(
-            "terraform output -raw floating_ipv4", self.getSubFolderPath(self.repo_name))
+            "terraform output -raw floating_ipv4", self.getSubFolderPath(self.repo_name), True)
 
         logging.info(
             f"Connect to {vmPublicIpv4} with key {self.input.pvt_key}")
         self.sysCall(
             f"ssh -o StrictHostKeyChecking=no -i {self.input.pvt_key} root@{vmPublicIpv4}", self.getSubFolderPath(self.repo_name))
 
-    # Get one of the outputs created by deploying the stack
+    # Get one of the outputs created by deploying the stack (terraform outputs)
     def getOutputVar(self, key) -> str:
-        return self.sysCall(f"terraform output -raw {key}", self.getSubFolderPath(self.repo_name))
+        return self.sysCall(f"terraform output -raw {key}", self.getSubFolderPath(self.repo_name), True)
