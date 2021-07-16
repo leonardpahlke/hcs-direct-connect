@@ -1,0 +1,325 @@
+package main
+
+import (
+	"fmt"
+
+	"github.com/pulumi/pulumi-gcp/sdk/v5/go/gcp/cloudrun"
+	"github.com/pulumi/pulumi-gcp/sdk/v5/go/gcp/compute"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
+)
+
+// - - - - - - - INFO - - - - - - -
+// THIS FILE IS NOT GETTING USED BUT SHOWS 
+//  HOW THE HCS-1 PUBLIC CLOUD MIGRATION 
+//  FROM AWS TO GCP LOOKS LIKE
+//  - - - - - - - - - - - - - - - -
+
+// * * * * * * * * * * * * * * * * * * * * * * * *
+// GLOBAL VAIRABLES
+
+// Datacenter that is getting used to run services
+const GCP_REGION = "europe-west3"
+
+// Region that is getting used to store data
+const GCP_BUCKET_REGION = "EU"
+
+// GCP Project ID
+const GCP_PROJECT_NAME = "hcs-sys-direct-connect"
+
+// Project name for service names
+const PROJECT_NAME = "hcs"
+
+// Environment this is getting deployed to; logical distingtion
+const DEPLOY_ENV = "dev"
+
+// * * * * * * * * * * * * * * * * * * * * * * * *
+// CONFIG
+type Data struct {
+	albClusterReqHandlerPort       int
+	clusterReqHandlerDesiredAmount int
+	clusterReqHandlerMemory        int
+	keyPairName                    string
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * *
+// MAIN FUNCTION WHICH HOLDS THE PULUMI GCP SERVICE CONFIGURATION
+func main() {
+	pulumi.Run(func(ctx *pulumi.Context) error {
+		var d Data
+		cfg := config.New(ctx, "")
+		cfg.RequireObject("data", &d)
+		// * * * * * * * * * * * * * * * * * * * * * * * *
+		// CONTAINER-REGISTRY
+		// _, err := container.NewRegistry(ctx, "registry", &container.RegistryArgs{
+		// 	Location: pulumi.String(GCP_BUCKET_REGION),
+		// 	Project:  pulumi.String(GCP_PROJECT_NAME),
+		// })
+		// if err != nil {
+		// 	return err
+		// }
+
+		// * * * * * * * * * * * * * * * * * * * * * * * *
+		// VPC NETWORK
+		gcpVpcNet, err := compute.NewNetwork(ctx, createName("vpc", "net"), &compute.NetworkArgs{
+			AutoCreateSubnetworks: pulumi.Bool(false),
+			Project:               pulumi.String(GCP_PROJECT_NAME),
+		})
+		if err != nil {
+			return err
+		}
+
+		// Private Subnet which has not internet access
+		subnetProcCidr := "10.0.0.16/28"
+		subnetProc, err := compute.NewSubnetwork(ctx, createName("subnet", "priv-proc"), &compute.SubnetworkArgs{
+			IpCidrRange: pulumi.String(subnetProcCidr),
+			Network:     gcpVpcNet.ID(),
+		})
+		if err != nil {
+			return err
+		}
+
+		// Public Subnet that has access to the internet
+		subnetNatGwCidr := "10.0.0.144/28"
+		subnetNatGw, err := compute.NewSubnetwork(ctx, createName("subnet", "pub-gw"), &compute.SubnetworkArgs{
+			IpCidrRange: pulumi.String(subnetNatGwCidr),
+			Network:     gcpVpcNet.ID(),
+		})
+		if err != nil {
+			return err
+		}
+
+		// Create a route in public subnet to access the internet
+		_, err = compute.NewRoute(ctx, createName("route", "priv-sn-to-pub-sn"), &compute.RouteArgs{
+			DestRange:      subnetNatGw.IpCidrRange,
+			Network:        gcpVpcNet.Name,
+			NextHopGateway: pulumi.String("default-internet-gateway"),
+			Priority:       pulumi.Int(100),
+		})
+		if err != nil {
+			return err
+		}
+
+		// * * * * * * * * * * * * * * * * * * * * * * * *
+		// CLOUD-RUN
+		_, err = cloudrun.NewService(ctx, createName("cloudrun", "reqhandler"), &cloudrun.ServiceArgs{
+			Location: pulumi.String(GCP_REGION),
+			Template: &cloudrun.ServiceTemplateArgs{
+				Spec: &cloudrun.ServiceTemplateSpecArgs{
+					Containers: cloudrun.ServiceTemplateSpecContainerArray{
+						&cloudrun.ServiceTemplateSpecContainerArgs{
+							// Docker image name. This is most often a reference to a container located in the container registry, such as gcr.io/cloudrun/hello More info: https://kubernetes.io/docs/concepts/containers/images
+							Image: pulumi.String("us-docker.pkg.dev/cloudrun/container/hello"),
+							// List of open ports in the container. More Info: https://cloud.google.com/run/docs/reference/rest/v1/RevisionSpec#ContainerPort Structure is documented below.
+							Ports: cloudrun.ServiceTemplateSpecContainerPortArray{
+								&cloudrun.ServiceTemplateSpecContainerPortArgs{
+									ContainerPort: pulumi.Int(d.albClusterReqHandlerPort),
+								},
+							},
+						},
+					},
+				},
+			},
+			Traffics: cloudrun.ServiceTrafficArray{
+				&cloudrun.ServiceTrafficArgs{
+					LatestRevision: pulumi.Bool(true),
+					Percent:        pulumi.Int(100),
+				},
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		// * * * * * * * * * * * * * * * * * * * * * * * *
+		// VM, NAT-GATEWAY INSTANCE
+		var natGatewayInstanceName = createName("cmp-engine", "nat-gw")
+		natGatewayInstance, err := compute.NewInstance(ctx, natGatewayInstanceName, &compute.InstanceArgs{
+			MachineType: pulumi.String("e2-micro"),
+			Tags:        createTags(natGatewayInstanceName),
+			BootDisk: &compute.InstanceBootDiskArgs{
+				InitializeParams: &compute.InstanceBootDiskInitializeParamsArgs{
+					Image: pulumi.String("ubuntu-os-cloud/ubuntu-2104"),
+				},
+			},
+			NetworkInterfaces: compute.InstanceNetworkInterfaceArray{
+				&compute.InstanceNetworkInterfaceArgs{
+					AccessConfigs: compute.InstanceNetworkInterfaceAccessConfigArray{},
+					Subnetwork:    subnetNatGw.ID(),
+				},
+			},
+			// Metadata: pulumi.StringMap{
+			// 	"foo": pulumi.String("bar"),
+			// },
+			// MetadataStartupScript: pulumi.String("echo hi > /test.txt"),
+			// ServiceAccount: &compute.InstanceServiceAccountArgs{
+			// 	Email: defaultAccount.Email,
+			// 	Scopes: pulumi.StringArray{
+			// 		pulumi.String("cloud-platform"),
+			// 	},
+			// },
+		})
+
+		// * * * * * * * * * * * * * * * * * * * * * * * *
+		// NETWORK FIREWALL
+		/*
+			    NAT-SN: IN
+				- (*) -> (NAT-CIDR); 80, 443, 22 (TCP)
+				- (*) -> (NAT-CIDR); 51820 (UDP)
+
+				NAT-SN: OUT
+				- (NAT-CIDR) -> (*); 80, 443 (TCP)
+				- (NAT-CIDR) -> (*); 51820 (UDP)
+
+				* * * * * + * * * * * + * * * * * +
+
+				PROC-SN: IN
+				- (*) -> (PROC-CIDR); 8000, 80, 443, 22 (TCP)
+
+				PROC-SN: OUT
+				- (PROC-CIDR) -> (NAT-CIDR); 80, 443 (TCP)
+		*/
+		const DIRECTION_INGRESS string = "INGRESS"
+		const DIRECTION_EGRESS string = "EGRESS"
+		const ALL_RANGES string = "0.0.0.0/0"
+		type FirewallConfig struct {
+			name              string
+			firewallAllowAry  compute.FirewallAllowArray
+			destinationRanges string
+			direction         string
+			sourceRanges      string
+			description       string
+		}
+		for _, e := range []FirewallConfig{
+			// * * * * * + NAT-SN + * * * * +
+			// FW CONFIG: IG, NAT-SN
+			{
+				name: "ig-nat",
+				firewallAllowAry: compute.FirewallAllowArray{
+					compute.FirewallAllowArgs{
+						Protocol: pulumi.String("tcp"),
+						Ports: pulumi.StringArray{
+							pulumi.String("80"),
+							pulumi.String("443"),
+							pulumi.String("22"),
+						},
+					},
+					compute.FirewallAllowArgs{
+						Protocol: pulumi.String("udp"),
+						Ports: pulumi.StringArray{
+							pulumi.String("51280"),
+						},
+					}},
+				destinationRanges: subnetNatGwCidr,
+				direction:         DIRECTION_INGRESS,
+				sourceRanges:      ALL_RANGES,
+				description:       "Allow inbound traffic on HTTP, SSH and WG ports from everywhere",
+			},
+			// FW CONFIG: EG, NAT-SN
+			{
+				name: "eg-nat",
+				firewallAllowAry: compute.FirewallAllowArray{
+					compute.FirewallAllowArgs{
+						Protocol: pulumi.String("tcp"),
+						Ports: pulumi.StringArray{
+							pulumi.String("80"),
+							pulumi.String("443"),
+						},
+					},
+					compute.FirewallAllowArgs{
+						Protocol: pulumi.String("udp"),
+						Ports: pulumi.StringArray{
+							pulumi.String("51280"),
+						},
+					}},
+				destinationRanges: ALL_RANGES,
+				direction:         DIRECTION_EGRESS,
+				sourceRanges:      subnetNatGwCidr,
+				description:       "Allow outbound traffic for ports HTTP and WG to anywhere",
+			},
+
+			// * * * * * + PROC-SN + * * * * +
+			// FW CONFIG: IG, PROC-SN
+			{
+				name: "ig-proc",
+				firewallAllowAry: compute.FirewallAllowArray{
+					compute.FirewallAllowArgs{
+						Protocol: pulumi.String("tcp"),
+						Ports: pulumi.StringArray{
+							pulumi.String(fmt.Sprintf("%v", d.albClusterReqHandlerPort)),
+							pulumi.String("80"),
+							pulumi.String("443"),
+							pulumi.String("22"),
+						},
+					}},
+				destinationRanges: subnetProcCidr,
+				direction:         DIRECTION_INGRESS,
+				sourceRanges:      ALL_RANGES,
+				description:       "Allow inbound traffic on HTTP and SSH ports from everywhere",
+			},
+			// FW CONFIG: EG, PROC-SN
+			{
+				name: "eg-proc",
+				firewallAllowAry: compute.FirewallAllowArray{
+					compute.FirewallAllowArgs{
+						Protocol: pulumi.String("tcp"),
+						Ports: pulumi.StringArray{
+							pulumi.String("80"),
+							pulumi.String("443"),
+						},
+					}},
+				destinationRanges: subnetNatGwCidr,
+				direction:         DIRECTION_EGRESS,
+				sourceRanges:      subnetProcCidr,
+				description:       "Allow outbound traffic for HTTP ports to NAT-SN",
+			},
+		} {
+			_, err = compute.NewFirewall(ctx, createName("firewall", e.name), &compute.FirewallArgs{
+				Allows:            e.firewallAllowAry,
+				DestinationRanges: pulumi.StringArray{pulumi.String(e.destinationRanges)},
+				Direction:         pulumi.String(e.direction),
+				Network:           gcpVpcNet.Name,
+				Project:           pulumi.String(GCP_PROJECT_NAME),
+				SourceRanges:      pulumi.StringArray{pulumi.String(e.sourceRanges)},
+				Description:       pulumi.String(e.description),
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		// Create a route in subnets to egress to nat instance
+		_, err = compute.NewRoute(ctx, createName("route", "priv-sn-to-pub-sn"), &compute.RouteArgs{
+			DestRange:       subnetProc.IpCidrRange,
+			Network:         gcpVpcNet.Name,
+			NextHopInstance: natGatewayInstance.InstanceId,
+			Priority:        pulumi.Int(100),
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * *
+// ADDITIONAL FUNCTIONS
+
+// createName/2: use this function to name service created
+//  @gcpServiceName: name of the gcp service     (e.g. cloudrun)
+//  @serviceName   : name of service you created (e.g. reqhandler)
+func createName(gcpServiceName string, serviceName string) string {
+	return fmt.Sprintf("%s-%s-%s/%s/%s", DEPLOY_ENV, PROJECT_NAME, GCP_REGION, gcpServiceName, serviceName)
+}
+
+// createTags/1: use this function to create tags for services created
+//  @resourceName: name of service you created     (e.g. reqhandler)
+func createTags(resourceName string) pulumi.StringArrayInput {
+	return pulumi.StringArray{
+		pulumi.String(DEPLOY_ENV),
+		pulumi.String(resourceName),
+		pulumi.String("Pulumi"),
+		pulumi.String(PROJECT_NAME),
+	}
+}

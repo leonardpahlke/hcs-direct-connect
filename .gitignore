@@ -14,5 +14,5 @@ hcs-sys-private/token.yaml
 .vscode
 wg0.conf
 hosts
-
+hcs-sys-private-2/legacy-container/node_modules/
 hcs-sys-public-gcp
