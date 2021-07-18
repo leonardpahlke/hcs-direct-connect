@@ -5,17 +5,18 @@ import subprocess
 import pathlib
 
 
-# This class container meta information that is getting injected to all deployment classes.
-class ProvisionerMeta:
-    # @project_name: general name of the project mainly used for logging
-    # @log_level: define which types of logs should be logged (like: logging.DEBUG, logging.INFO, ...)
-    def __init__(self, project_name="HCS2", log_level=logging.INFO) -> None:
-        self.project_name = project_name
-        logging.basicConfig(level=log_level)
+PROJECT_NAME = "HCS2"
+DEFAULT_LOG_LEVEL = logging.INFO
 
 
 # Abstract deployment class used to implement concrete deployments.
 class Provisioner(ABC):
+    def __init__(self, name, repo_name, project_name=PROJECT_NAME, log_level=DEFAULT_LOG_LEVEL) -> None:
+        self.project_name = project_name
+        logging.basicConfig(level=log_level)
+        self.name = name
+        self.repo_name = repo_name
+
     # This method is getting used to deploy the infrastructure by executing IaC-Code (this also runs updates)
     @abstractmethod
     def deploy(self):
@@ -26,33 +27,31 @@ class Provisioner(ABC):
     def destroy(self):
         pass
 
-    # This method contains logic to connect to one of the created resources.
-    # If no resource is available for the connection, leave the parameter empty.
-    # If multiple resources are available to connect to, specify the entity using the id parameter
-    # @id: Optional, specify resources that you want to connect to
+    # This method is used to get an output variable created by the IaC-Tool
+    #  @key: The key that specifies which output you want to receive
     @abstractmethod
-    def connect(self, id):
+    def get_output_var(self, key) -> str:
         pass
 
-    @abstractmethod
-    def getOutputVar(self, key) -> str:
-        pass
-
-    # sysCall - run a system call (like 'ls')
-    def sysCall(self, cmd, path="", wait_for_response=False):
+    # This method is used to run a system call (like 'ls')
+    #  @cmd: The command you want to execute (like 'pwd')
+    #  @path: The path you wanto to jump to, to execute the command, leave it blank if you dont want to change your current path
+    #  @wait_for_resp: Set this to true if you need to receive an output; if this is true, no logs will appear during the call in the STDOUT console terminal.
+    def sys_call(self, cmd, path="", wait_for_resp=False) -> str:
         if path is not "":
             os.chdir(path)
         result = subprocess.run(
-            cmd.split(" "), stdout=subprocess.PIPE if wait_for_response else None)
+            cmd.split(" "), stdout=subprocess.PIPE if wait_for_resp else None)
         if result.returncode is not 0:
             print()
             logging.debug(result.stdout)
             logging.error(result.stderr)
             raise SystemExit("Error occured, sysCall not successfull, exit")
-        response = result.stdout.decode('utf-8') if wait_for_response else ""
+        response = result.stdout.decode('utf-8') if wait_for_resp else ""
         return response
 
     # Returns the path of a subfolder
-    def getSubFolderPath(self, subfolder="") -> str:
-        return f"{pathlib.Path(__file__).parent.resolve()}/{subfolder}"
+    #  @sub_path: This variable adds a path to the end of the current path (like: resp='/User/?/hcs/hcs_2/' + 'sub_path')
+    def get_sub_folder_path(self, sub_path="") -> str:
+        return f"{pathlib.Path(__file__).parent.resolve()}/{sub_path}"
         # return subfolder

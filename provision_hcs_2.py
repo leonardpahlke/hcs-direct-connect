@@ -1,13 +1,8 @@
-import os
-import pathlib
 import secrets
-import subprocess
-from hcs_2.abc_provisioner import ProvisionerMeta
-from hcs_2.provision_hcs_priv import InProvisionerHcsPriv2, ProvisionerHcsPriv2
-from hcs_2.provision_hcs_pub import InProvisionerHcsPub2, ProvisionerHcsPub2
+from hcs_2.provision_hcs_priv import InProvisionerPriv2, ProvisionerPriv2
+from hcs_2.provision_hcs_pub import InProvisionerPub2, ProvisionerPub2
 
 # VARIABLES
-meta = ProvisionerMeta()
 folder_hcs_sys_platform = "hcs-sys-platform"
 
 
@@ -26,7 +21,7 @@ def yelw_str(msg) -> str:
 #  1. deploy hcs-2-private project
 #  2. deploy hcs-2-public project
 #  3. deploy hcs-platform project
-def hcs2_provision_deploy():
+def hcs2_deploy():
     # * * * * * * * * * * *
     # CONFIG
     # vpn-tunnel
@@ -42,8 +37,8 @@ def hcs2_provision_deploy():
     # * * * * * * * * * * *
     # DEPLOY HCS-2-PRIVATE
     print_blue("START WITH HCS-2-PRIVATE")
-    provisioner_priv = ProvisionerHcsPriv2(
-        meta=meta, input=InProvisionerHcsPriv2(vpc_cidr=onprem_vpc_cidr))
+    provisioner_priv = ProvisionerPriv2(
+        input=InProvisionerPriv2(vpc_cidr=onprem_vpc_cidr))
     provisioner_priv.deploy()
     on_prem_peer_ip = provisioner_priv.getOutputVar("floating_ipv4")
     print(f"on_prem_peer_ip: {on_prem_peer_ip}")
@@ -51,11 +46,11 @@ def hcs2_provision_deploy():
     # * * * * * * * * * * *
     # DEPLOY HCS-2-PUBLIC
     print_blue("START WITH HCS-2-PUBLIC")
-    provisioner_pub = ProvisionerHcsPub2(
-        meta=meta, input=InProvisionerHcsPub2(
+    provisioner_pub = ProvisionerPub2(
+        input=InProvisionerPub2(
             on_prem_peer_ip=on_prem_peer_ip,
             on_prem_subnet_cidr=onprem_vpc_cidr,
-            on_premSharedSecret=vpn_tunnel_shared_secret,
+            on_prem_shared_secret=vpn_tunnel_shared_secret,
             gcp_vm_req_handler_port=gcp_vm_req_handler_port,
             gcp_vpc_subnet_cidr=gcp_vpc_subnet_cidr,
             gcp_api_cidr=gcp_api_cidr
@@ -76,13 +71,13 @@ def hcs2_provision_deploy():
 
 # - - - - - - - - - - - - - - - - - - - - -
 # Destroy HCS-2 System
-def hcs2_provision_destroy():
+def hcs2_destroy():
     print_blue("START HCS-DESTROY")
-    ProvisionerHcsPub2(meta=meta, input=InProvisionerHcsPub2(
+    ProvisionerPub2(input=InProvisionerPub2(
         on_prem_peer_ip="",
-        on_premSharedSecret="",)).destroy()
-    ProvisionerHcsPriv2(
-        meta=meta, input=InProvisionerHcsPriv2()).destroy()
+        on_prem_shared_secret="",)).destroy()
+    ProvisionerPriv2(
+        input=InProvisionerPriv2()).destroy()
 
     # os.chdir(
     #    f"{pathlib.Path(__file__).parent.resolve()}/{folder_hcs_sys_platform}")
@@ -97,12 +92,12 @@ def hcs2_provision_connect():
     method = input(
         f"Select to which resource you want to connect to [{yelw_str('a')}, {yelw_str('b')}] \n- [{yelw_str('a')}]: gcp-req-handler \n- [{yelw_str('b')}]: do-legacy-vm \n>> ")
     if method == "a":
-        ProvisionerHcsPub2(meta=meta, input=InProvisionerHcsPub2(
+        ProvisionerPub2(input=InProvisionerPub2(
             on_prem_peer_ip="",
-            on_premSharedSecret="",)).connect("")
+            on_prem_shared_secret="",)).connect("")
     elif method == "b":
-        ProvisionerHcsPriv2(
-            meta=meta, input=InProvisionerHcsPriv2()).connect("")
+        ProvisionerPriv2(
+            input=InProvisionerPriv2()).connect("")
     else:
         raise SystemExit(f"Invalid input received:[{method}], exit")
 
@@ -114,9 +109,9 @@ if __name__ == "__main__":
         f"Select method [{yelw_str('a')}, {yelw_str('b')}] \n- [{yelw_str('a')}]: deploy the system \n- [{yelw_str('b')}]: destroy the system \n>> ")
 
     if method == "a":
-        hcs2_provision_deploy()
+        hcs2_deploy()
     elif method == "b":
-        hcs2_provision_destroy()
+        hcs2_destroy()
     else:
         raise SystemExit(f"Invalid method selected:[{method}], exit")
 
