@@ -15,3 +15,25 @@ To automate the deployment process python classes have been defined (see 'abc_pr
 The structure is shown in the diagram below.
 
 ![Deployment classes](./assets/ba-06-automatisierung-aufbau.png)
+
+## Additional information for HCS-SYS-PRIVATE
+
+The terraform file `protected_vars.tf` is not getting pushed to version control and needs to be created manually. Example is shown below.
+
+```tf
+variable "do_token" {
+  description = "Digital Ocean token"
+  type        = string
+  default     = "AAABBBCCC"
+}
+variable "pvt_key" {
+  description = "SSH Key path"
+  type        = string
+  default     = "~/.ssh/id_rsa"
+}
+```
+
+- Check terraform template `terraform plan -out tf_out.json`
+- Create resources in digital ocean `terraform apply -out tf_out.json`
+- SHH into VM with `ssh -i ~/.ssh/id_rsa` root@0.0.0.0/0
+- Destroy resources in digital ocean `terraform destroy`
