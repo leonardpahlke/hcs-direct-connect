@@ -6,7 +6,7 @@ echo
 echo "${LIGHT_BLUE}CONNECT TO HCS-2 RESOURCE...${NC}"
 echo
 
-if [ $1 == "prv" ] 
+if [ $1=="prv" ] 
 then
     echo "connect to private cloud vm - legacy-vm"
     onprem_vm_pvt_key="~/.ssh/id_rsa_hcs"
@@ -16,7 +16,7 @@ then
     echo "${LIGHT_BLUE}Connect to legacy-vm with info vmPublicIpv4: ${vmPublicIpv4}${NC}"
     ssh -o StrictHostKeyChecking=no -i $onprem_vm_pvt_key root@$vmPublicIpv4 || { echo "${RED}FAILED CONNECT: ssh root@${vmPublicIpv4} ssh${NC}" ; exit 1; }
     
-elif [ $1 == "pub" ] 
+elif [ $1=="pub" ] 
 then
     echo "connect to public cloud vm - request-handler"
     

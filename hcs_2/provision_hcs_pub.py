@@ -86,7 +86,7 @@ class ProvisionerPub2(provisioner.Provisioner):
 
     # Get one of the outputs created by deploying the stack (Pulumi outputs)
     def get_output_var(self, key) -> str:
-        return self.sys_call(f"pulumi stack output {key}", True)
+        return self.sys_call(f"pulumi stack output {key}", path=self.get_sub_folder_path(self.repo_name), wait_for_resp=True)
 
     # setPulumiDataConfig - set Pulumi config
     def set_pulumi_data_config(self, pulumiDataKey, value, secret=False):
@@ -94,4 +94,4 @@ class ProvisionerPub2(provisioner.Provisioner):
         if secret:
             extra_flags += " --secret"
         self.sys_call(
-            f"pulumi config set {extra_flags} --path 'data.{pulumiDataKey}' {value}", self.get_sub_folder_path(self.repo_name))
+            f"pulumi config set {extra_flags} --path data.{pulumiDataKey} {value}", self.get_sub_folder_path(self.repo_name))

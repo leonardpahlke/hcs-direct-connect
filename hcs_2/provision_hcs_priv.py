@@ -55,4 +55,4 @@ class ProvisionerPriv2(provisioner.Provisioner):
 
     # Get one of the outputs created by deploying the stack (terraform outputs)
     def get_output_var(self, key) -> str:
-        return self.sys_call(f"terraform output -raw {key}", self.get_sub_folder_path(self.repo_name), True)
+        return self.sys_call(f"terraform output -raw {key}", path=self.get_sub_folder_path(self.repo_name), wait_for_resp=True)

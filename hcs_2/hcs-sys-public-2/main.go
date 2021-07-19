@@ -115,7 +115,7 @@ func main() {
 			Name:           pulumi.String(routeIgwName),
 			Network:        hcsVpc.Name,
 			NextHopGateway: pulumi.String("default-internet-gateway"),
-			Priority:       pulumi.Int(100),
+			Priority:       pulumi.Int(1000),
 			Project:        pulumi.String(PROJECT_NAME_GCP),
 			Tags:           createTags(routeIgwName),
 		})
@@ -125,6 +125,10 @@ func main() {
 
 		// * * * * * * * * * * * * * * * * * * * * * * * *
 		// VM, NAT-GATEWAY INSTANCE
+		vmStaticAdr, err := compute.NewAddress(ctx, createName("vm-static"), nil)
+		if err != nil {
+			return err
+		}
 		var hcsGwVmName = createName("vm-req-han")
 		hcsRequestHandlerVm, err := compute.NewInstance(ctx, hcsGwVmName, &compute.InstanceArgs{
 			Project:      pulumi.String(PROJECT_NAME_GCP),
@@ -142,8 +146,11 @@ func main() {
 				},
 			},
 			NetworkInterfaces: compute.InstanceNetworkInterfaceArray{&compute.InstanceNetworkInterfaceArgs{
-				AccessConfigs: compute.InstanceNetworkInterfaceAccessConfigArray{},
-				Subnetwork:    hcsSN.ID(),
+				AccessConfigs: compute.InstanceNetworkInterfaceAccessConfigArray{
+					&compute.InstanceNetworkInterfaceAccessConfigArgs{
+						NatIp: vmStaticAdr.Address, // The IP address that will be 1:1 mapped to the instance's network ip (a public IPv4 in this case)
+					}},
+				Subnetwork: hcsSN.ID(),
 			}},
 		})
 
@@ -197,7 +204,7 @@ func main() {
 		} {
 			_, err = compute.NewFirewall(ctx, createName(e.name), &compute.FirewallArgs{
 				Project:           pulumi.String(PROJECT_NAME_GCP),
-				Network:           hcsVpc.Name,
+				Network:           hcsVpc.ID(),
 				Description:       pulumi.String(e.description),
 				Allows:            e.firewallAllowAry,         // The list of ALLOW rules specified by this firewall.
 				DestinationRanges: e.destinationRanges,        // If destination ranges are specified, the firewall will apply only to traffic that has destination IP address in these ranges.
@@ -238,6 +245,9 @@ func main() {
 			{name: "fr-esp", ipProtocol: "ESP"},
 			{name: "fr-udp-500", ipProtocol: "UDP", portRange: "500"},
 			{name: "fr-udp-4500", ipProtocol: "UDP", portRange: "4500"},
+			{name: "fr-tcp-80", ipProtocol: "TCP", portRange: "80"},
+			{name: "fr-tcp-443", ipProtocol: "TCP", portRange: "443"},
+			{name: "fr-tcp-22", ipProtocol: "TCP", portRange: "22"},
 		} {
 			fwdRule, err := compute.NewForwardingRule(ctx, createName(e.name), &compute.ForwardingRuleArgs{
 				IpProtocol: pulumi.String(e.ipProtocol),
@@ -273,7 +283,7 @@ func main() {
 		_, err = compute.NewRoute(ctx, routeOnPremName, &compute.RouteArgs{
 			DestRange:        pulumi.String(conf.OnpremSubnetCidr),
 			Name:             pulumi.String(routeOnPremName),
-			Network:          hcsVpc.Name,
+			Network:          hcsVpc.ID(),
 			NextHopVpnTunnel: hcsVpnTunnel.ID(),
 			Priority:         pulumi.Int(1000),
 			Project:          pulumi.String(PROJECT_NAME_GCP),
