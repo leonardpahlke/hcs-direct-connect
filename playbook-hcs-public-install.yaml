@@ -24,7 +24,17 @@
     - name: Install required system packages
       apt: name={{ sys_packages }} state=latest
 
-# UFW Setup
+
+# WireGuard KeySetup
+    - name: Allow redirection of network packets at kernel level
+      ansible.builtin.shell: 
+        cmd: "echo net.ipv4.ip_forward=1 > /etc/sysctl.conf"
+    
+    - name: Apply changes
+      ansible.builtin.shell: 
+        cmd: "sysctl -p"
+
+        # UFW Setup
     - name: UFW - Allow SSH connections
       ufw:
         rule: allow
@@ -37,24 +47,23 @@
         port: '{{ vpnPort }}'
         # 51820
 
+    - name: Enable UFW
+      ansible.builtin.shell: 
+        cmd: ufw --force enable
+
     #- name: UFW - Deny all other incoming traffic by default
     #  ufw:
     #    state: enabled
     #    policy: deny
     #    direction: incoming
-
-# WireGuard KeySetup
-    - name: Allow redirection of network packets at kernel level
-      ansible.builtin.shell: 
-        cmd: "echo net.ipv4.ip_forward=1 > /etc/sysctl.conf"
     
-    - name: Apply changes
+    - name: Set the permissions for the directory
       ansible.builtin.shell: 
-        cmd: "sysctl -p"
+        cmd: umask 077
     
     - name: Create public- and private-key for vpn connection
       ansible.builtin.shell: 
-        cmd: wg genkey | sudo tee /etc/wireguard/server_private.key | wg pubkey | sudo tee /etc/wireguard/server_public.key
+        cmd: wg genkey | tee /etc/wireguard/server_private.key | wg pubkey | tee /etc/wireguard/server_public.key
     
     - name: Update read/write settings for private-key file
       ansible.builtin.shell: 

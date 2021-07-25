@@ -1,12 +1,23 @@
 ---
-- hosts: all
+- hosts: reqhandler
   become: true
 
   tasks:
+    - name: Disable password authentication for root
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        state: present
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin prohibit-password'
+
     - copy:
         src: ./wg0.conf
         dest: /etc/wireguard/wg0.conf
     
     - name: Start WireGuard interface
       ansible.builtin.shell: 
-        cmd: sudo systemctl start wg-quick@wg0
+        cmd: wg-quick up wg0
+
+    - name: Start WireGuard interface by system boot
+      ansible.builtin.shell: 
+        cmd: systemctl enable wg-quick@wg0

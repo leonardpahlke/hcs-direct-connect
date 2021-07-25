@@ -56,7 +56,7 @@ echo "Pulumi configuration set"
 echo
 
 echo "Deploy Pulumi project..."
-pulumi up -y
+pulumi up --stack dev -y
 echo "Pulumi project deployed"
 
 echo

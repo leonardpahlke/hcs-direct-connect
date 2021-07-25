@@ -11,16 +11,18 @@ echo "Create $interface_file file"
 sudo echo "[Interface]
 PrivateKey = $client_private_key
 Address = $vpnClientIp/24
-DNS = 8.8.8.8
+DNS = 1.1.1.1
 
 [Peer]
 PublicKey = $server_public_key
-AllowedIPs = 0.0.0.0/0
+AllowedIPs = 0.0.0.0/0, ::/0
 Endpoint = $legacySysPublicIp:$vpnPort
 PersistentKeepalive = 25" > /etc/wireguard/$interface_file
 echo "$interface_file file created"
 
-sudo chmod +x /etc/wireguard/$interface_file
+#sudo chmod +x /etc/wireguard/$interface_file
 
-echo "Start Interface"
-sudo wg-quick up wg0
+#echo "Start Interface"
+#sudo wg-quick up wg0
+
+#systemctl enable wg-quick@wg0
