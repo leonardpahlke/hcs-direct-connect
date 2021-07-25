@@ -1,0 +1,57 @@
+---
+- hosts: reqhandler
+  become: true
+  vars:
+    - sys_packages: [ 'curl', 'vim', 'git', 'ufw', 'wireguard']
+  #vars_files:
+  #  - ansible-defaults.yaml
+
+  tasks:
+    - name: Install Prerequisites
+      apt: name=aptitude update_cache=yes state=latest force_apt_get=yes
+
+    - name: Disable password authentication for root
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        state: present
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin prohibit-password'
+
+# Install Packages
+    - name: Update apt
+      apt: update_cache=yes
+
+    - name: Install required system packages
+      apt: name={{ sys_packages }} state=latest
+
+# UFW Setup
+    
+    - name: UFW - Allow WireGuard connections
+      ufw:
+        rule: allow
+        proto: udp
+        port: '{{ vpnPort }}'
+        # 51820
+
+    #- name: UFW - Deny all other incoming traffic by default
+    #  ufw:
+    #    state: enabled
+    #    policy: deny
+    #    direction: incoming
+
+# WireGuard KeySetup
+    - name: Allow redirection of network packets at kernel level
+      ansible.builtin.shell: 
+        cmd: "echo net.ipv4.ip_forward=1 > /etc/sysctl.conf"
+    
+    - name: Apply changes
+      ansible.builtin.shell: 
+        cmd: "sysctl -p"
+    
+    - name: Create public- and private-key for vpn connection
+      ansible.builtin.shell: 
+        cmd: wg genkey | sudo tee /etc/wireguard/server_private.key | wg pubkey | sudo tee /etc/wireguard/server_public.key
+    
+    - name: Update read/write settings for private-key file
+      ansible.builtin.shell: 
+        cmd: chmod 600 /etc/wireguard/server_private.key

@@ -8,8 +8,9 @@ NC='\033[0m'
 #   * hcs-sys-platform
 # Subprojects can get destroyed individually.
 
-folder_hcs_sys_public_cloud="hcs-sys-public"
-folder_hcs_sys_private_cloud="hcs-sys-private"
+project_subfolder="hcs_1"
+folder_hcs_sys_public_cloud="${project_subfolder}/hcs-sys-public"
+folder_hcs_sys_private_cloud="${project_subfolder}/hcs-sys-private"
 folder_hcs_sys_platform="hcs-sys-platform"
 
 # CONFIGURATION

@@ -15,8 +15,9 @@ NC='\033[0m'
 # Access to AWS is configured outside of this project scope (credentials file).
 
 # Project folder variables
-folder_hcs_sys_public_cloud="hcs-sys-public"
-folder_hcs_sys_private_cloud="hcs-sys-private"
+project_subfolder="hcs_1"
+folder_hcs_sys_public_cloud="${project_subfolder}/hcs-sys-public"
+folder_hcs_sys_private_cloud="${project_subfolder}/hcs-sys-private"
 folder_hcs_sys_platform="hcs-sys-platform"
 
 project_name="hcs"

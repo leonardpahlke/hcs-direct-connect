@@ -1,7 +1,7 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import * as awsx from "@pulumi/awsx";
-import { projectName, GetTags } from "../util";
+import { projectName, GetTags } from "../../util";
 
 const clusterReqHandlerName = projectName + "-cluster-req-han";
 
@@ -95,6 +95,13 @@ const natSecurityGroup = new aws.ec2.SecurityGroup(sgGatewayName, {
       cidrBlocks: [subnetPrivateProcessingCidr],
     },
     {
+      description: "Allow inbound ICMP traffic",
+      fromPort: -1,
+      toPort: -1,
+      protocol: "ICMP",
+      cidrBlocks: [subnetPrivateProcessingCidr],
+    },
+    {
       description:
         "Allow inbound HTTPS traffic from servers in the private subnet",
       fromPort: 443,
@@ -131,6 +138,13 @@ const natSecurityGroup = new aws.ec2.SecurityGroup(sgGatewayName, {
       fromPort: 443,
       toPort: 443,
       protocol: "TCP",
+      cidrBlocks: ["0.0.0.0/0"],
+    },
+    {
+      description: "Allow outbound ICMP traffic access to the internet",
+      fromPort: -1,
+      toPort: -1,
+      protocol: "ICMP",
       cidrBlocks: ["0.0.0.0/0"],
     },
     {

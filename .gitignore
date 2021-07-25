@@ -20,3 +20,4 @@ hcs_2/hcs-sys-private-2/legacy-container/node_modules/
 hcs_2/hcs-sys-public-2/req-handler-container/node_modules/
 hcs-sys-public-gcp
 secret.json
+tmp/
