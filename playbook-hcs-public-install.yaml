@@ -3,8 +3,6 @@
   become: true
   vars:
     - sys_packages: [ 'curl', 'vim', 'git', 'ufw', 'wireguard']
-  #vars_files:
-  #  - ansible-defaults.yaml
 
   tasks:
     - name: Install Prerequisites
@@ -26,15 +24,15 @@
 
 
 # WireGuard KeySetup
-    - name: Allow redirection of network packets at kernel level
-      ansible.builtin.shell: 
-        cmd: "echo net.ipv4.ip_forward=1 > /etc/sysctl.conf"
+    #- name: Allow redirection of network packets at kernel level
+    #  ansible.builtin.shell: 
+    #    cmd: "echo net.ipv4.ip_forward=1 > /etc/sysctl.conf"
     
-    - name: Apply changes
-      ansible.builtin.shell: 
-        cmd: "sysctl -p"
+    #- name: Apply changes
+    #  ansible.builtin.shell: 
+    #    cmd: "sysctl -p"
 
-        # UFW Setup
+# UFW Setup
     - name: UFW - Allow SSH connections
       ufw:
         rule: allow
@@ -60,7 +58,8 @@
     - name: Set the permissions for the directory
       ansible.builtin.shell: 
         cmd: umask 077
-    
+
+# Generate Wireguard keys
     - name: Create public- and private-key for vpn connection
       ansible.builtin.shell: 
         cmd: wg genkey | tee /etc/wireguard/server_private.key | wg pubkey | tee /etc/wireguard/server_public.key
@@ -68,3 +67,7 @@
     - name: Update read/write settings for private-key file
       ansible.builtin.shell: 
         cmd: chmod 600 /etc/wireguard/server_private.key
+    
+    - name: Update read/write settings for public-key file
+      ansible.builtin.shell: 
+        cmd: chmod 600 /etc/wireguard/server_public.key

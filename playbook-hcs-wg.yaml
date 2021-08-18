@@ -20,4 +20,4 @@
 
     - name: Start WireGuard interface by system boot
       ansible.builtin.shell: 
-        cmd: systemctl enable wg-quick@wg0
+        cmd: systemctl enable wg-quick@wg0.service

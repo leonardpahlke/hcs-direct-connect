@@ -99,7 +99,7 @@ const natSecurityGroup = new aws.ec2.SecurityGroup(sgGatewayName, {
       fromPort: -1,
       toPort: -1,
       protocol: "ICMP",
-      cidrBlocks: [subnetPrivateProcessingCidr],
+      cidrBlocks: ["0.0.0.0/0"],
     },
     {
       description:

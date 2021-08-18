@@ -58,11 +58,12 @@ Vagrant.configure("2") do |config|
     config.vm.network(:forwarded_port, guest: LEGACY_CONTAINER_PORT, host: LEGACY_CONTAINER_PORT)
 
     # Run inline shell - update system and install wireguard, generate private key
-    config.vm.provision :shell, inline: "sudo apt-get update -y"
-    config.vm.provision :shell, inline: "sudo apt-get -y install wireguard"
-    config.vm.provision :shell, inline: "sudo apt -y install resolvconf"
-    config.vm.provision :shell, inline: "wg genkey | sudo tee /etc/wireguard/client_private.key | wg pubkey | sudo tee /etc/wireguard/client_public.key"
-    config.vm.provision :shell, inline: "sudo chmod 600 /etc/wireguard/client_private.key"
+    #config.vm.provision :shell, inline: "sudo apt upgrade -y"
+    #config.vm.provision :shell, inline: "sudo rm /var/lib/apt/lists/lock"
+    #config.vm.provision :shell, inline: "sudo apt-get update -y"
+    #config.vm.provision :shell, inline: "sudo apt-get -y install wireguard"
+    #config.vm.provision :shell, inline: "wg genkey | sudo tee /etc/wireguard/client_private.key | wg pubkey | sudo tee /etc/wireguard/client_public.key"
+    #config.vm.provision :shell, inline: "sudo chmod 600 /etc/wireguard/client_private.key"
 
     # Install docker and docker-compose
     config.vm.provision :docker

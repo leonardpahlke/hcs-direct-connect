@@ -17,9 +17,8 @@ folder_hcs_sys_platform="hcs-sys-platform"
 INFRASTRUCTURE_ENVIRONMENTS="${folder_hcs_sys_public_cloud} ${folder_hcs_sys_private_cloud} ${folder_hcs_sys_platform}"
 
 echo "${LIGHT_BLUE}DESTROY-MAIN: START WITH SHUTTING DOWN HYBRID-CLOUD...${NC}"
-for infraPath in $INFRASTRUCTURE_ENVIRONMENTS
-do
-    echo "${LIGHT_BLUE}DESTROY-MAIN: DESRTOY ${infraPath}...${NC}"  
+for infraPath in $INFRASTRUCTURE_ENVIRONMENTS; do
+    echo "${LIGHT_BLUE}DESTROY-MAIN: DESRTOY ${infraPath}...${NC}"
     cd $infraPath/
     ./destroy.sh
     cd ..
