@@ -16,5 +16,5 @@ Address = $wgPrivateIpClient/24
 PublicKey = $server_public_key
 AllowedIPs = $wgPrivateIpServer/32
 Endpoint = $serverPublicIp:$vpnPort
-PersistentKeepalive = 21" > /etc/wireguard/$interface_file
+PersistentKeepalive = 21" >/etc/wireguard/$interface_file
 echo "$interface_file file created"

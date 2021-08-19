@@ -3,6 +3,6 @@ config:
   hcs-sys-platform:data:
     lambdaTimeoutInSeconds: 10
     requestHandlerEndpoint: https://www.google.com
-    requestHandlerHostname: hcs-cluster-req-han-alb-ba73967-371764651.eu-central-1.elb.amazonaws.com
+    requestHandlerHostname: hcs-cluster-req-han-alb-23bd37a-387184994.eu-central-1.elb.amazonaws.com
     requestHandlerPath: /health-check-connection
     requestHandlerPort: 8000

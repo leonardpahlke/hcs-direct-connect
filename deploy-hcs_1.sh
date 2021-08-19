@@ -34,7 +34,7 @@ requestHandlerPort=8000
 legacyComponentPort=8050
 
 # VPN Connection variables
-vpnPort=51280
+vpnPort=51820
 vpnClientIp="10.50.0.2"
 vpnClientIpCidrStart="10.50.0.1"
 
@@ -140,8 +140,6 @@ echo "${LIGHT_BLUE}DEPLOY-MAIN: 7.1. create vpn-tunnel public-cloud (server)${NC
 echo "[Interface]
 PrivateKey = $server_private_key
 Address = $wgPrivateIpServer/24
-#PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-#PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
 ListenPort = $vpnPort
 
 [Peer]
@@ -155,7 +153,7 @@ ansible-playbook playbook-hcs-wg.yaml -l $ansible_inv_nat_gw_ref -u $nat_gw_user
 echo "${LIGHT_BLUE}DEPLOY-MAIN: 7.2. create vpn-tunnel private-cloud${NC}"
 cd $folder_hcs_sys_private_cloud
 # Setup interface file
-vagrant ssh -c "sudo sh /vagrant/$hcs_wg_install_file wg0.conf $client_private_key $server_public_key $wgPrivateIpClient $vpnPort $hcs_sys_private_legacySysPublicIp $wgPrivateIpServer"
+vagrant ssh -c "sudo sh /vagrant/$hcs_wg_install_file wg0.conf $client_private_key $server_public_key $wgPrivateIpClient $vpnPort $hcs_sys_public_natInstancePublicIp $wgPrivateIpServer"
 # Start interface
 vagrant ssh -c "sudo wg-quick up wg0"
 # Start interface config at reboot
