@@ -2,7 +2,7 @@
 export let configSet = false;
 
 export let currentRuntimeConfig: runtimeConfig = {
-  legacySysPrivateIp: "localhost",
+  legacySysPrivateIp: "10.50.0.2",
   legacySysPort: "8050",
 };
 

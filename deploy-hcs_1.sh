@@ -184,3 +184,9 @@ echo
 # echo
 # echo "${LIGHT_BLUE}FINISHED WITH HYBRID-CLOUD-DEPLOYMENT${NC}"
 # echo
+
+echo "Update configuration"
+curl -X 'POST' \
+    'http://hcs-cluster-req-han-alb-23bd37a-387184994.eu-central-1.elb.amazonaws.com:8000/set-config/10.50.0.2/8050' \
+    -H 'accept: application/json' \
+    -d ''
