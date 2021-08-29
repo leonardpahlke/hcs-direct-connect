@@ -13,15 +13,15 @@ const clusterReqHandlerName = projectName + "-cluster-req-han";
 let config = new pulumi.Config();
 
 // Structured configuration input https://www.pulumi.com/docs/intro/concepts/config/#structured-configuration
-interface Data {
+interface ConfigData {
   albClusterReqHandlerPort: number;
   clusterReqHandlerDesiredAmount: number;
   clusterReqHandlerMemory: number;
   keyPairName: string;
 }
 
-let configData = config.requireObject<Data>("data");
-
+let configData = config.requireObject<ConfigData>("data");
+// set config vars
 let albClusterReqHandlerPort = configData.albClusterReqHandlerPort || 8000;
 let clusterReqHandlerDesiredAmount =
   configData.clusterReqHandlerDesiredAmount || 1;
@@ -48,49 +48,52 @@ let keyPairName = configData.keyPairName || "hcs-gw-key";
  * 1. NETWORKING
  */
 const nameVpc = `${projectName}-vpc`;
-const subnetPrivateProcessingName = `${nameVpc}-sn-priv-proc`;
-const subnetPublicGatewayName = `${nameVpc}-subnet-public-gw`;
-const vpc = new awsx.ec2.Vpc(nameVpc, {
+const subnetPrivateProcessingName = `${nameVpc}-sn-prv`;
+const subnetPublicGatewayName = `${nameVpc}-sn-pub`;
+// const vpc = new awsx.ec2.Vpc(nameVpc, {
+//   cidrBlock: "10.0.0.0/24",
+//   numberOfAvailabilityZones: 1,
+//   subnets: [
+//     { type: "public", name: subnetPublicGatewayName },
+//     { type: "isolated", name: subnetPrivateProcessingName },
+//   ],
+//   tags: GetTags(nameVpc),
+// });
+const vpc = new aws.ec2.Vpc(nameVpc, {
   cidrBlock: "10.0.0.0/24",
-  numberOfAvailabilityZones: 2,
-  subnets: [
-    { type: "isolated", name: subnetPublicGatewayName },
-    { type: "isolated", name: subnetPrivateProcessingName },
-  ],
   tags: GetTags(nameVpc),
 });
 
 // Export a few resulting fields to make them easy to use:
-export const vpcId = vpc.id;
-const subnetPrivateProcessing = pulumi.output(vpc.isolatedSubnets)[0].subnet;
-const subnetPublicGateway = pulumi.output(vpc.isolatedSubnets)[1].subnet;
-const subnetPrivateProcessingCidr = subnetPrivateProcessing.cidrBlock;
+// export const vpcId = vpc.id;
+// const subnetPrivateProcessing = pulumi.output(vpc.isolatedSubnets)[0].subnet;
+// const subnetPublicGateway = pulumi.output(vpc.publicSubnets)[0].subnet;
+// const subnetPrivateProcessingCidr = subnetPrivateProcessing.cidrBlock;
+
 // Create subnets - "public-gateway" and "private-processing"
-// const subnetPrivateProcessingName = `${nameVpc}-sn-priv-proc`;
-// const subnetPrivateProcessingCidr = "10.0.0.16/28";
-// const subnetPrivateProcessing = new aws.ec2.Subnet(
-//   subnetPrivateProcessingName,
-//   {
-//     vpcId: vpc.id,
-//     cidrBlock: subnetPrivateProcessingCidr,
-//     tags: GetTags(subnetPrivateProcessingName),
-//   }
-// );
-// const subnetPublicGatewayName = `${nameVpc}-subnet-public-gw`;
-// const subnetPublicGatewayCidr = "10.0.0.144/28";
-// const subnetPublicGateway = new aws.ec2.Subnet(subnetPublicGatewayName, {
-//   vpcId: vpc.id,
-//   cidrBlock: subnetPublicGatewayCidr,
-//   mapPublicIpOnLaunch: true,
-//   tags: GetTags(subnetPublicGatewayName),
-// });
+const subnetPrivateProcessingCidr = "10.0.0.16/28";
+const subnetPrivateProcessing = new aws.ec2.Subnet(
+  subnetPrivateProcessingName,
+  {
+    vpcId: vpc.id,
+    cidrBlock: subnetPrivateProcessingCidr,
+    tags: GetTags(subnetPrivateProcessingName),
+  }
+);
+const subnetPublicGatewayCidr = "10.0.0.144/28";
+const subnetPublicGateway = new aws.ec2.Subnet(subnetPublicGatewayName, {
+  vpcId: vpc.id,
+  cidrBlock: subnetPublicGatewayCidr,
+  mapPublicIpOnLaunch: true,
+  tags: GetTags(subnetPublicGatewayName),
+});
 
 // Create a internet gateway and attach it to the VPC to get internet access
-// const internetGatewayName = `${nameVpc}-igw`;
-// const igw = new aws.ec2.InternetGateway(internetGatewayName, {
-//   vpcId: vpc.id,
-//   tags: GetTags(internetGatewayName),
-// });
+const internetGatewayName = `${nameVpc}-igw`;
+const igw = new aws.ec2.InternetGateway(internetGatewayName, {
+  vpcId: vpc.id,
+  tags: GetTags(internetGatewayName),
+});
 
 // Create a security group which is attach to the Gateway Instance and functions as a firewall
 const sgGatewayName = `${nameVpc}-sg-nat`;
@@ -122,8 +125,7 @@ const natSecurityGroup = new aws.ec2.SecurityGroup(sgGatewayName, {
       cidrBlocks: [subnetPrivateProcessingCidr],
     },
     {
-      description:
-        "Allow inbound SSH access to the NAT instance from your home network (over the internet gateway) ",
+      description: "Allow inbound SSH access to the NAT instance from anywhere",
       fromPort: 22,
       toPort: 22,
       protocol: "TCP",
@@ -195,30 +197,29 @@ const natInstance = new aws.ec2.Instance(natInstanceName, {
   creditSpecification: {
     cpuCredits: "unlimited",
   },
-  //sourceDestCheck: false,
   tags: GetTags(natInstanceName),
 });
 
 // Create a RouteTable to redirect traffic from the private-subnet to the gateway-subnet
-// const snRouteTableNamePublic = `${subnetPublicGatewayName}-rt`;
-// const snPublicRouteTable = new aws.ec2.RouteTable(snRouteTableNamePublic, {
-//   vpcId: vpc.id,
-//   routes: [
-//     {
-//       cidrBlock: "0.0.0.0/0",
-//       gatewayId: igw.id,
-//     },
-//   ],
-//   tags: GetTags(snRouteTableNamePublic),
-// });
-// // Associate the Route-Table to the public subnet
-// const snPublicRouteTableAssociation = new aws.ec2.RouteTableAssociation(
-//   `${snRouteTableNamePublic}-asso`,
-//   {
-//     subnetId: subnetPublicGateway.id,
-//     routeTableId: snPublicRouteTable.id,
-//   }
-// );
+const snRouteTableNamePublic = `${subnetPublicGatewayName}-rt`;
+const snPublicRouteTable = new aws.ec2.RouteTable(snRouteTableNamePublic, {
+  vpcId: vpc.id,
+  routes: [
+    {
+      cidrBlock: "0.0.0.0/0",
+      gatewayId: igw.id,
+    },
+  ],
+  tags: GetTags(snRouteTableNamePublic),
+});
+// Associate the Route-Table to the public subnet
+const snPublicRouteTableAssociation = new aws.ec2.RouteTableAssociation(
+  `${snRouteTableNamePublic}-asso`,
+  {
+    subnetId: subnetPublicGateway.id,
+    routeTableId: snPublicRouteTable.id,
+  }
+);
 
 const snRouteTableNamePrivate = `${subnetPrivateProcessingName}-rt`;
 const snPrivateRouteTable = new aws.ec2.RouteTable(snRouteTableNamePrivate, {
@@ -232,13 +233,13 @@ const snPrivateRouteTable = new aws.ec2.RouteTable(snRouteTableNamePrivate, {
   tags: GetTags(snRouteTableNamePrivate),
 });
 // Associate the Route-Table to the private subnet
-// const snPrivateRouteTableAssociation = new aws.ec2.RouteTableAssociation(
-//   `${snRouteTableNamePrivate}-asso`,
-//   {
-//     subnetId: subnetPrivateProcessing.id,
-//     routeTableId: snPrivateRouteTable.id,
-//   }
-// );
+const snPrivateRouteTableAssociation = new aws.ec2.RouteTableAssociation(
+  `${snRouteTableNamePrivate}-asso`,
+  {
+    subnetId: subnetPrivateProcessing.id,
+    routeTableId: snPrivateRouteTable.id,
+  }
+);
 
 /**
  * 2. ARCHIVING
@@ -248,10 +249,6 @@ const containerImage = awsx.ecs.Image.fromPath(
   `${projectName}-ecr`,
   "./req-handler-container"
 );
-
-/**
- * 3. CLUSTER
- */
 
 // Create a log group in CloudWatch to accumulate logs
 const nameContainerLogGroupReqHandler = `${clusterReqHandlerName}-log-group`;
@@ -263,6 +260,10 @@ const containerLogGroupReqHandler = new aws.cloudwatch.LogGroup(
   }
 );
 
+/**
+ * 3. CLUSTER
+ */
+
 // Create an application load balancer (ALB) & listener
 //  that has a publicly accessible endpoint
 //  needed to gain access to the ecs cluster
@@ -271,14 +272,22 @@ const albListenerReqHandler = new awsx.lb.ApplicationListener(
   { port: albClusterReqHandlerPort }
 );
 
+// const vpcx = awsx.ec2.Vpc.fromExistingIds(nameVpc, {
+//   vpcId: vpc.id,
+//   privateSubnetIds: [subnetPrivateProcessing.id],
+//   publicSubnetIds: [subnetPublicGateway.id],
+// });
 // Create an ECS cluster
 const clusterReqHandler = new awsx.ecs.Cluster(clusterReqHandlerName, {
   tags: {
     Name: clusterReqHandlerName,
   },
-  vpc: vpc,
+  // vpc: awsx.ec2.Vpc.fromExistingIds("x" + nameVpc, {
+  //   vpcId: vpc.id,
+  //   privateSubnetIds: [subnetPrivateProcessing.id],
+  //   publicSubnetIds: [subnetPublicGateway.id],
+  // }),
 });
-
 // Deploy a Fargate Service into the new ECS cluster.
 new awsx.ecs.FargateService(clusterReqHandlerName + "-svc", {
   cluster: clusterReqHandler,
@@ -294,6 +303,7 @@ new awsx.ecs.FargateService(clusterReqHandlerName + "-svc", {
     },
   },
   desiredCount: clusterReqHandlerDesiredAmount,
+  waitForSteadyState: true,
 });
 
 /**
