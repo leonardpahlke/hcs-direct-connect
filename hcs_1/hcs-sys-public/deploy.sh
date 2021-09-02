@@ -4,7 +4,7 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 echo
-echo 
+echo
 echo "${GREEN}START HCS-SYS-PUBLIC - DEPLOY.SH ...${NC}"
 echo
 albClusterReqHandlerPort=8000
@@ -13,9 +13,16 @@ clusterReqHandlerMemory=128
 # Name of the key that is getting used to log in to the ec2 instance
 keyPairName="hcs-nat-key"
 awsregion="eu-central-1"
+dockerImage="leonardpahlke/hcs_req_handler"
 
-if [ $# -eq 3 ] 
-then
+# echo "DOCKER IMAGE"
+# docker system df
+# docker image prune -a -f
+# docker build -t $dockerImage ./req-handler-container
+# docker push $dockerImage
+# echo "DOKCER IMAGE DEPLOYED"
+
+if [ $# -eq 3 ]; then
     echo "Arguments supplied update defaults"
 
     $albClusterReqHandlerPort=$1
@@ -25,8 +32,7 @@ then
     echo "updatd variable albClusterReqHandlerPort to: $albClusterReqHandlerPort"
     echo "updatd variable clusterReqHandlerDesiredAmount to: $clusterReqHandlerDesiredAmount"
     echo "updatd variable clusterReqHandlerMemory to: $clusterReqHandlerMemory"
-elif [ $# -eq 0 ] 
-then
+elif [ $# -eq 0 ]; then
     echo "${YELLOW}HCS-SYS-PUBLIC No arguments supplied; use default arguments${NC}"
 else
     echo "${RED}HCS-SYS-PUBLIC Not enough arguments supplied; use defaults${NC}"
@@ -52,6 +58,7 @@ pulumi config set --path 'data.albClusterReqHandlerPort' $albClusterReqHandlerPo
 pulumi config set --path 'data.clusterReqHandlerDesiredAmount' $clusterReqHandlerDesiredAmount
 pulumi config set --path 'data.clusterReqHandlerMemory' $clusterReqHandlerMemory
 pulumi config set --path 'data.keyPairName' $keyPairName
+pulumi config set --path 'data.dockerImage' $dockerImage
 echo "Pulumi configuration set"
 echo
 

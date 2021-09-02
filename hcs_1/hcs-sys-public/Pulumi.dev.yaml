@@ -4,6 +4,7 @@ config:
     albClusterReqHandlerPort: 8000
     clusterReqHandlerDesiredAmount: 1
     clusterReqHandlerMemory: 128
+    dockerImage: leonardpahlke/hcs_req_handler
     gwkeyname: hcs-gw-key
     keyPairIdName: hcs-gw-key
     keyPairName: hcs-nat-key

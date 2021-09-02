@@ -2,7 +2,7 @@
     "version": 3,
     "deployment": {
         "manifest": {
-            "time": "2021-08-29T14:16:26.977+02:00",
+            "time": "2021-09-02T13:35:58.514792+02:00",
             "magic": "25ff35eb2fae40d93bc09f0c28dba28b6a6c73228e44b41f98c7670f813f2894",
             "version": "v3.11.0"
         },
@@ -19,16 +19,12 @@
             {
                 "urn": "urn:pulumi:dev::hcs-sys-public::pulumi:pulumi:Stack::hcs-sys-public-dev",
                 "custom": false,
-                "type": "pulumi:pulumi:Stack",
-                "outputs": {
-                    "albHostReqHandler": "hcs-cluster-req-han-alb-8fc07d7-1139323659.eu-central-1.elb.amazonaws.com",
-                    "natInstancePublicIp": "3.126.84.251"
-                }
+                "type": "pulumi:pulumi:Stack"
             },
             {
                 "urn": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1",
                 "custom": true,
-                "id": "f6814b7f-2ac1-4107-87ba-d7e33bfda61f",
+                "id": "7ed1fff3-8903-4ee5-80d4-5a43d202147e",
                 "type": "pulumi:providers:aws",
                 "inputs": {
                     "region": "eu-central-1",
@@ -38,12 +34,6 @@
                     "region": "eu-central-1",
                     "version": "4.5.1"
                 }
-            },
-            {
-                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc::xhcs-vpc",
-                "custom": false,
-                "type": "awsx:x:ec2:Vpc",
-                "parent": "urn:pulumi:dev::hcs-sys-public::pulumi:pulumi:Stack::hcs-sys-public-dev"
             },
             {
                 "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateService::hcs-cluster-req-han-svc",
@@ -67,9 +57,15 @@
                 ]
             },
             {
-                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition::hcs-cluster-req-han-svc",
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc::hcs-vpc",
                 "custom": false,
-                "type": "awsx:x:ecs:FargateTaskDefinition",
+                "type": "awsx:x:ec2:Vpc",
+                "parent": "urn:pulumi:dev::hcs-sys-public::pulumi:pulumi:Stack::hcs-sys-public-dev"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-cluster-req-han-svc-0",
+                "custom": false,
+                "type": "awsx:x:ec2:SecurityGroup",
                 "parent": "urn:pulumi:dev::hcs-sys-public::pulumi:pulumi:Stack::hcs-sys-public-dev"
             },
             {
@@ -79,109 +75,28 @@
                 "parent": "urn:pulumi:dev::hcs-sys-public::pulumi:pulumi:Stack::hcs-sys-public-dev"
             },
             {
-                "urn": "urn:pulumi:dev::hcs-sys-public::aws:cloudwatch/logGroup:LogGroup::hcs-cluster-req-han-log-group",
-                "custom": true,
-                "id": "hcs-cluster-req-han-log-group-9193ca2",
-                "type": "aws:cloudwatch/logGroup:LogGroup",
-                "inputs": {
-                    "__defaults": [
-                        "name"
-                    ],
-                    "name": "hcs-cluster-req-han-log-group-9193ca2",
-                    "retentionInDays": 3,
-                    "tags": {
-                        "CreatedBy": "Leonard Pahlke",
-                        "DeployEnvironment": "dev",
-                        "Name": "hcs-cluster-req-han-log-group",
-                        "ProjectName": "hcs",
-                        "__defaults": []
-                    }
-                },
-                "outputs": {
-                    "arn": "arn:aws:logs:eu-central-1:711303001971:log-group:hcs-cluster-req-han-log-group-9193ca2",
-                    "id": "hcs-cluster-req-han-log-group-9193ca2",
-                    "kmsKeyId": "",
-                    "name": "hcs-cluster-req-han-log-group-9193ca2",
-                    "retentionInDays": 3,
-                    "tags": {
-                        "CreatedBy": "Leonard Pahlke",
-                        "DeployEnvironment": "dev",
-                        "Name": "hcs-cluster-req-han-log-group",
-                        "ProjectName": "hcs"
-                    },
-                    "tagsAll": {
-                        "CreatedBy": "Leonard Pahlke",
-                        "DeployEnvironment": "dev",
-                        "Name": "hcs-cluster-req-han-log-group",
-                        "ProjectName": "hcs"
-                    }
-                },
-                "parent": "urn:pulumi:dev::hcs-sys-public::pulumi:pulumi:Stack::hcs-sys-public-dev",
-                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::f6814b7f-2ac1-4107-87ba-d7e33bfda61f",
-                "propertyDependencies": {
-                    "retentionInDays": null,
-                    "tags": null
-                }
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition::hcs-cluster-req-han-svc",
+                "custom": false,
+                "type": "awsx:x:ecs:FargateTaskDefinition",
+                "parent": "urn:pulumi:dev::hcs-sys-public::pulumi:pulumi:Stack::hcs-sys-public-dev"
             },
             {
-                "urn": "urn:pulumi:dev::hcs-sys-public::aws:ec2/vpc:Vpc::hcs-vpc",
-                "custom": true,
-                "id": "vpc-0230dedce1c760537",
-                "type": "aws:ec2/vpc:Vpc",
-                "inputs": {
-                    "__defaults": [
-                        "assignGeneratedIpv6CidrBlock",
-                        "enableDnsSupport",
-                        "instanceTenancy"
-                    ],
-                    "assignGeneratedIpv6CidrBlock": false,
-                    "cidrBlock": "10.0.0.0/24",
-                    "enableDnsSupport": true,
-                    "instanceTenancy": "default",
-                    "tags": {
-                        "CreatedBy": "Leonard Pahlke",
-                        "DeployEnvironment": "dev",
-                        "Name": "hcs-vpc",
-                        "ProjectName": "hcs",
-                        "__defaults": []
-                    }
-                },
-                "outputs": {
-                    "__meta": "{\"schema_version\":\"1\"}",
-                    "arn": "arn:aws:ec2:eu-central-1:711303001971:vpc/vpc-0230dedce1c760537",
-                    "assignGeneratedIpv6CidrBlock": false,
-                    "cidrBlock": "10.0.0.0/24",
-                    "defaultNetworkAclId": "acl-07aeb50dc090f1f8c",
-                    "defaultRouteTableId": "rtb-09e67933b6331b770",
-                    "defaultSecurityGroupId": "sg-0dfdc705feb4427b5",
-                    "dhcpOptionsId": "dopt-01b83e6b",
-                    "enableDnsHostnames": false,
-                    "enableDnsSupport": true,
-                    "id": "vpc-0230dedce1c760537",
-                    "instanceTenancy": "default",
-                    "ipv6AssociationId": "",
-                    "ipv6CidrBlock": "",
-                    "mainRouteTableId": "rtb-09e67933b6331b770",
-                    "ownerId": "711303001971",
-                    "tags": {
-                        "CreatedBy": "Leonard Pahlke",
-                        "DeployEnvironment": "dev",
-                        "Name": "hcs-vpc",
-                        "ProjectName": "hcs"
-                    },
-                    "tagsAll": {
-                        "CreatedBy": "Leonard Pahlke",
-                        "DeployEnvironment": "dev",
-                        "Name": "hcs-vpc",
-                        "ProjectName": "hcs"
-                    }
-                },
-                "parent": "urn:pulumi:dev::hcs-sys-public::pulumi:pulumi:Stack::hcs-sys-public-dev",
-                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::f6814b7f-2ac1-4107-87ba-d7e33bfda61f",
-                "propertyDependencies": {
-                    "cidrBlock": null,
-                    "tags": null
-                }
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-vpc-sg-nat",
+                "custom": false,
+                "type": "awsx:x:ec2:SecurityGroup",
+                "parent": "urn:pulumi:dev::hcs-sys-public::pulumi:pulumi:Stack::hcs-sys-public-dev"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-vpc-sg-fargate",
+                "custom": false,
+                "type": "awsx:x:ec2:SecurityGroup",
+                "parent": "urn:pulumi:dev::hcs-sys-public::pulumi:pulumi:Stack::hcs-sys-public-dev"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:Cluster$awsx:x:ec2:SecurityGroup::hcs-cluster-req-han",
+                "custom": false,
+                "type": "awsx:x:ec2:SecurityGroup",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:Cluster::hcs-cluster-req-han"
             },
             {
                 "urn": "urn:pulumi:dev::hcs-sys-public::aws:ec2/vpc:Vpc::default-vpc",
@@ -210,7 +125,29 @@
                 },
                 "parent": "urn:pulumi:dev::hcs-sys-public::pulumi:pulumi:Stack::hcs-sys-public-dev",
                 "external": true,
-                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::f6814b7f-2ac1-4107-87ba-d7e33bfda61f"
+                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::7ed1fff3-8903-4ee5-80d4-5a43d202147e"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::aws:lb:ApplicationLoadBalancer$awsx:lb:ApplicationListener::hcs-cluster-req-han-alb",
+                "custom": false,
+                "type": "awsx:lb:ApplicationListener",
+                "parent": "urn:pulumi:dev::hcs-sys-public::aws:lb:ApplicationLoadBalancer::hcs-cluster-req-han-alb",
+                "aliases": [
+                    "urn:pulumi:dev::hcs-sys-public::aws:lb:ApplicationLoadBalancer$awsx:x:elasticloadbalancingv2:ApplicationListener::hcs-cluster-req-han-alb",
+                    "urn:pulumi:dev::hcs-sys-public::awsx:lb:ApplicationListener::hcs-cluster-req-han-alb",
+                    "urn:pulumi:dev::hcs-sys-public::awsx:x:elasticloadbalancingv2:ApplicationLoadBalancer$awsx:lb:ApplicationListener::hcs-cluster-req-han-alb"
+                ]
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::aws:lb:ApplicationLoadBalancer$awsx:lb:ApplicationTargetGroup::hcs-cluster-req-han-alb",
+                "custom": false,
+                "type": "awsx:lb:ApplicationTargetGroup",
+                "parent": "urn:pulumi:dev::hcs-sys-public::aws:lb:ApplicationLoadBalancer::hcs-cluster-req-han-alb",
+                "aliases": [
+                    "urn:pulumi:dev::hcs-sys-public::aws:lb:ApplicationLoadBalancer$awsx:x:elasticloadbalancingv2:ApplicationTargetGroup::hcs-cluster-req-han-alb",
+                    "urn:pulumi:dev::hcs-sys-public::awsx:lb:ApplicationTargetGroup::hcs-cluster-req-han-alb",
+                    "urn:pulumi:dev::hcs-sys-public::awsx:x:elasticloadbalancingv2:ApplicationLoadBalancer$awsx:lb:ApplicationTargetGroup::hcs-cluster-req-han-alb"
+                ]
             },
             {
                 "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc::default-vpc",
@@ -223,26 +160,582 @@
                 ]
             },
             {
-                "urn": "urn:pulumi:dev::hcs-sys-public::aws:ec2/vpc:Vpc::xhcs-vpc",
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc$awsx:x:ec2:InternetGateway::hcs-vpc",
+                "custom": false,
+                "type": "awsx:x:ec2:InternetGateway",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc::hcs-vpc"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc$awsx:x:ec2:Subnet::hcs-vpc-hcs-vpc-sn-prv-isolated-0",
+                "custom": false,
+                "type": "awsx:x:ec2:Subnet",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc::hcs-vpc",
+                "aliases": [
+                    "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Subnet::hcs-vpc-hcs-vpc-sn-prv-isolated-0"
+                ]
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc$awsx:x:ec2:Subnet::hcs-vpc-hcs-vpc-sn-pub-public-0",
+                "custom": false,
+                "type": "awsx:x:ec2:Subnet",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc::hcs-vpc",
+                "aliases": [
+                    "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Subnet::hcs-vpc-hcs-vpc-sn-pub-public-0"
+                ]
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc$aws:ec2/subnet:Subnet::default-vpc-public-0",
                 "custom": true,
-                "id": "vpc-0230dedce1c760537",
-                "type": "aws:ec2/vpc:Vpc",
+                "id": "subnet-14c9a77e",
+                "type": "aws:ec2/subnet:Subnet",
                 "outputs": {
-                    "__meta": "{\"schema_version\":\"1\"}",
-                    "arn": "arn:aws:ec2:eu-central-1:711303001971:vpc/vpc-0230dedce1c760537",
+                    "__meta": "{\"e2bfb730-ecaa-11e6-8f88-34363bc7c4c0\":{\"create\":600000000000,\"delete\":1200000000000},\"schema_version\":\"1\"}",
+                    "arn": "arn:aws:ec2:eu-central-1:711303001971:subnet/subnet-14c9a77e",
+                    "assignIpv6AddressOnCreation": false,
+                    "availabilityZone": "eu-central-1a",
+                    "availabilityZoneId": "euc1-az2",
+                    "cidrBlock": "172.31.16.0/20",
+                    "customerOwnedIpv4Pool": "",
+                    "id": "subnet-14c9a77e",
+                    "ipv6CidrBlock": "",
+                    "ipv6CidrBlockAssociationId": "",
+                    "mapCustomerOwnedIpOnLaunch": false,
+                    "mapPublicIpOnLaunch": true,
+                    "outpostArn": "",
+                    "ownerId": "711303001971",
+                    "tags": {},
+                    "tagsAll": {},
+                    "vpcId": "vpc-2791174d"
+                },
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc::default-vpc",
+                "external": true,
+                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::7ed1fff3-8903-4ee5-80d4-5a43d202147e"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc$aws:ec2/subnet:Subnet::default-vpc-public-1",
+                "custom": true,
+                "id": "subnet-b2ec48ce",
+                "type": "aws:ec2/subnet:Subnet",
+                "outputs": {
+                    "__meta": "{\"e2bfb730-ecaa-11e6-8f88-34363bc7c4c0\":{\"create\":600000000000,\"delete\":1200000000000},\"schema_version\":\"1\"}",
+                    "arn": "arn:aws:ec2:eu-central-1:711303001971:subnet/subnet-b2ec48ce",
+                    "assignIpv6AddressOnCreation": false,
+                    "availabilityZone": "eu-central-1b",
+                    "availabilityZoneId": "euc1-az3",
+                    "cidrBlock": "172.31.32.0/20",
+                    "customerOwnedIpv4Pool": "",
+                    "id": "subnet-b2ec48ce",
+                    "ipv6CidrBlock": "",
+                    "ipv6CidrBlockAssociationId": "",
+                    "mapCustomerOwnedIpOnLaunch": false,
+                    "mapPublicIpOnLaunch": true,
+                    "outpostArn": "",
+                    "ownerId": "711303001971",
+                    "tags": {},
+                    "tagsAll": {},
+                    "vpcId": "vpc-2791174d"
+                },
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc::default-vpc",
+                "external": true,
+                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::7ed1fff3-8903-4ee5-80d4-5a43d202147e"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:Cluster$aws:ecs/cluster:Cluster::hcs-cluster-req-han",
+                "custom": true,
+                "id": "arn:aws:ecs:eu-central-1:711303001971:cluster/hcs-cluster-req-han-17d861c",
+                "type": "aws:ecs/cluster:Cluster",
+                "inputs": {
+                    "__defaults": [
+                        "name"
+                    ],
+                    "name": "hcs-cluster-req-han-17d861c",
+                    "tags": {
+                        "Name": "hcs-cluster-req-han",
+                        "__defaults": []
+                    }
+                },
+                "outputs": {
+                    "arn": "arn:aws:ecs:eu-central-1:711303001971:cluster/hcs-cluster-req-han-17d861c",
+                    "capacityProviders": [],
+                    "defaultCapacityProviderStrategies": [],
+                    "id": "arn:aws:ecs:eu-central-1:711303001971:cluster/hcs-cluster-req-han-17d861c",
+                    "name": "hcs-cluster-req-han-17d861c",
+                    "settings": [],
+                    "tags": {
+                        "Name": "hcs-cluster-req-han"
+                    },
+                    "tagsAll": {
+                        "Name": "hcs-cluster-req-han"
+                    }
+                },
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:Cluster::hcs-cluster-req-han",
+                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::7ed1fff3-8903-4ee5-80d4-5a43d202147e",
+                "propertyDependencies": {
+                    "tags": null
+                }
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition$aws:ecr/repository:Repository::hcs-ecr",
+                "custom": true,
+                "id": "hcs-ecr-5556693",
+                "type": "aws:ecr/repository:Repository",
+                "inputs": {
+                    "__defaults": [
+                        "imageTagMutability",
+                        "name"
+                    ],
+                    "imageTagMutability": "MUTABLE",
+                    "name": "hcs-ecr-5556693"
+                },
+                "outputs": {
+                    "__meta": "{\"e2bfb730-ecaa-11e6-8f88-34363bc7c4c0\":{\"delete\":1200000000000}}",
+                    "arn": "arn:aws:ecr:eu-central-1:711303001971:repository/hcs-ecr-5556693",
+                    "encryptionConfigurations": [
+                        {
+                            "encryptionType": "AES256",
+                            "kmsKey": ""
+                        }
+                    ],
+                    "id": "hcs-ecr-5556693",
+                    "imageScanningConfiguration": {
+                        "scanOnPush": false
+                    },
+                    "imageTagMutability": "MUTABLE",
+                    "name": "hcs-ecr-5556693",
+                    "registryId": "711303001971",
+                    "repositoryUrl": "711303001971.dkr.ecr.eu-central-1.amazonaws.com/hcs-ecr-5556693",
+                    "tags": {},
+                    "tagsAll": {}
+                },
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition::hcs-cluster-req-han-svc",
+                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::7ed1fff3-8903-4ee5-80d4-5a43d202147e"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup$awsx:x:ec2:EgressSecurityGroupRule::hcs-vpc-sg-nat-egress-0",
+                "custom": false,
+                "type": "awsx:x:ec2:EgressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-vpc-sg-nat"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition$aws:cloudwatch/logGroup:LogGroup::hcs-cluster-req-han-svc",
+                "custom": true,
+                "id": "hcs-cluster-req-han-svc-0f4074e",
+                "type": "aws:cloudwatch/logGroup:LogGroup",
+                "inputs": {
+                    "__defaults": [
+                        "name"
+                    ],
+                    "name": "hcs-cluster-req-han-svc-0f4074e",
+                    "retentionInDays": 1
+                },
+                "outputs": {
+                    "arn": "arn:aws:logs:eu-central-1:711303001971:log-group:hcs-cluster-req-han-svc-0f4074e",
+                    "id": "hcs-cluster-req-han-svc-0f4074e",
+                    "kmsKeyId": "",
+                    "name": "hcs-cluster-req-han-svc-0f4074e",
+                    "retentionInDays": 1,
+                    "tags": {},
+                    "tagsAll": {}
+                },
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition::hcs-cluster-req-han-svc",
+                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::7ed1fff3-8903-4ee5-80d4-5a43d202147e",
+                "propertyDependencies": {
+                    "retentionInDays": null
+                }
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition$aws:iam/role:Role::hcs-cluster-req-han-svc-task",
+                "custom": true,
+                "id": "hcs-cluster-req-han-svc-task-5c0de19",
+                "type": "aws:iam/role:Role",
+                "inputs": {
+                    "__defaults": [
+                        "forceDetachPolicies",
+                        "maxSessionDuration",
+                        "name",
+                        "path"
+                    ],
+                    "assumeRolePolicy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"},\"Effect\":\"Allow\",\"Sid\":\"\"}]}",
+                    "forceDetachPolicies": false,
+                    "maxSessionDuration": 3600,
+                    "name": "hcs-cluster-req-han-svc-task-5c0de19",
+                    "path": "/"
+                },
+                "outputs": {
+                    "arn": "arn:aws:iam::711303001971:role/hcs-cluster-req-han-svc-task-5c0de19",
+                    "assumeRolePolicy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}",
+                    "createDate": "2021-09-02T11:35:31Z",
+                    "description": "",
+                    "forceDetachPolicies": false,
+                    "id": "hcs-cluster-req-han-svc-task-5c0de19",
+                    "inlinePolicies": [
+                        {
+                            "name": "",
+                            "policy": ""
+                        }
+                    ],
+                    "managedPolicyArns": [],
+                    "maxSessionDuration": 3600,
+                    "name": "hcs-cluster-req-han-svc-task-5c0de19",
+                    "path": "/",
+                    "tags": {},
+                    "tagsAll": {},
+                    "uniqueId": "AROA2LHHWO5ZW2R4ZXUSK"
+                },
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition::hcs-cluster-req-han-svc",
+                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::7ed1fff3-8903-4ee5-80d4-5a43d202147e",
+                "propertyDependencies": {
+                    "assumeRolePolicy": null
+                }
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup$awsx:x:ec2:IngressSecurityGroupRule::hcs-vpc-sg-nat-ingress-0",
+                "custom": false,
+                "type": "awsx:x:ec2:IngressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-vpc-sg-nat"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup$awsx:x:ec2:IngressSecurityGroupRule::hcs-vpc-sg-nat-ingress-4",
+                "custom": false,
+                "type": "awsx:x:ec2:IngressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-vpc-sg-nat"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup$awsx:x:ec2:EgressSecurityGroupRule::hcs-vpc-sg-nat-egress-3",
+                "custom": false,
+                "type": "awsx:x:ec2:EgressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-vpc-sg-nat"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup$awsx:x:ec2:IngressSecurityGroupRule::hcs-vpc-sg-nat-ingress-1",
+                "custom": false,
+                "type": "awsx:x:ec2:IngressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-vpc-sg-nat"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup$awsx:x:ec2:IngressSecurityGroupRule::hcs-vpc-sg-nat-ingress-3",
+                "custom": false,
+                "type": "awsx:x:ec2:IngressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-vpc-sg-nat"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup$awsx:x:ec2:IngressSecurityGroupRule::hcs-vpc-sg-nat-ingress-2",
+                "custom": false,
+                "type": "awsx:x:ec2:IngressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-vpc-sg-nat"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup$awsx:x:ec2:EgressSecurityGroupRule::hcs-vpc-sg-nat-egress-2",
+                "custom": false,
+                "type": "awsx:x:ec2:EgressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-vpc-sg-nat"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup$awsx:x:ec2:IngressSecurityGroupRule::hcs-vpc-sg-fargate-ingress-1",
+                "custom": false,
+                "type": "awsx:x:ec2:IngressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-vpc-sg-fargate"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup$awsx:x:ec2:EgressSecurityGroupRule::hcs-vpc-sg-nat-egress-1",
+                "custom": false,
+                "type": "awsx:x:ec2:EgressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-vpc-sg-nat"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition$aws:iam/role:Role::hcs-cluster-req-han-svc-execution",
+                "custom": true,
+                "id": "hcs-cluster-req-han-svc-execution-4a38be6",
+                "type": "aws:iam/role:Role",
+                "inputs": {
+                    "__defaults": [
+                        "forceDetachPolicies",
+                        "maxSessionDuration",
+                        "name",
+                        "path"
+                    ],
+                    "assumeRolePolicy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"},\"Effect\":\"Allow\",\"Sid\":\"\"}]}",
+                    "forceDetachPolicies": false,
+                    "maxSessionDuration": 3600,
+                    "name": "hcs-cluster-req-han-svc-execution-4a38be6",
+                    "path": "/"
+                },
+                "outputs": {
+                    "arn": "arn:aws:iam::711303001971:role/hcs-cluster-req-han-svc-execution-4a38be6",
+                    "assumeRolePolicy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ecs-tasks.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}",
+                    "createDate": "2021-09-02T11:35:33Z",
+                    "description": "",
+                    "forceDetachPolicies": false,
+                    "id": "hcs-cluster-req-han-svc-execution-4a38be6",
+                    "inlinePolicies": [
+                        {
+                            "name": "",
+                            "policy": ""
+                        }
+                    ],
+                    "managedPolicyArns": [],
+                    "maxSessionDuration": 3600,
+                    "name": "hcs-cluster-req-han-svc-execution-4a38be6",
+                    "path": "/",
+                    "tags": {},
+                    "tagsAll": {},
+                    "uniqueId": "AROA2LHHWO5Z4UKTTFEKU"
+                },
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition::hcs-cluster-req-han-svc",
+                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::7ed1fff3-8903-4ee5-80d4-5a43d202147e",
+                "propertyDependencies": {
+                    "assumeRolePolicy": null
+                }
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup$awsx:x:ec2:EgressSecurityGroupRule::hcs-vpc-sg-fargate-egress-0",
+                "custom": false,
+                "type": "awsx:x:ec2:EgressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-vpc-sg-fargate"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup$awsx:x:ec2:IngressSecurityGroupRule::hcs-vpc-sg-fargate-ingress-3",
+                "custom": false,
+                "type": "awsx:x:ec2:IngressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-vpc-sg-fargate"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup$awsx:x:ec2:IngressSecurityGroupRule::hcs-vpc-sg-fargate-ingress-2",
+                "custom": false,
+                "type": "awsx:x:ec2:IngressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-vpc-sg-fargate"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup$awsx:x:ec2:IngressSecurityGroupRule::hcs-vpc-sg-fargate-ingress-0",
+                "custom": false,
+                "type": "awsx:x:ec2:IngressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-vpc-sg-fargate"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:Cluster$awsx:x:ec2:SecurityGroup$awsx:x:ec2:IngressSecurityGroupRule::hcs-cluster-req-han-ssh",
+                "custom": false,
+                "type": "awsx:x:ec2:IngressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:Cluster$awsx:x:ec2:SecurityGroup::hcs-cluster-req-han"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:Cluster$awsx:x:ec2:SecurityGroup$awsx:x:ec2:IngressSecurityGroupRule::hcs-cluster-req-han-containers",
+                "custom": false,
+                "type": "awsx:x:ec2:IngressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:Cluster$awsx:x:ec2:SecurityGroup::hcs-cluster-req-han"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:Cluster$awsx:x:ec2:SecurityGroup$awsx:x:ec2:EgressSecurityGroupRule::hcs-cluster-req-han-egress",
+                "custom": false,
+                "type": "awsx:x:ec2:EgressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:Cluster$awsx:x:ec2:SecurityGroup::hcs-cluster-req-han"
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::aws:lb:ApplicationLoadBalancer$awsx:lb:ApplicationListener$awsx:x:ec2:EgressSecurityGroupRule::hcs-cluster-req-han-alb-external-0-egress",
+                "custom": false,
+                "type": "awsx:x:ec2:EgressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::aws:lb:ApplicationLoadBalancer$awsx:lb:ApplicationListener::hcs-cluster-req-han-alb",
+                "aliases": [
+                    "urn:pulumi:dev::hcs-sys-public::aws:lb:ApplicationLoadBalancer$awsx:x:elasticloadbalancingv2:ApplicationListener$awsx:x:ec2:EgressSecurityGroupRule::hcs-cluster-req-han-alb-external-0-egress",
+                    "urn:pulumi:dev::hcs-sys-public::awsx:lb:ApplicationListener$awsx:x:ec2:EgressSecurityGroupRule::hcs-cluster-req-han-alb-external-0-egress",
+                    "urn:pulumi:dev::hcs-sys-public::awsx:x:elasticloadbalancingv2:ApplicationLoadBalancer$awsx:lb:ApplicationListener$awsx:x:ec2:EgressSecurityGroupRule::hcs-cluster-req-han-alb-external-0-egress"
+                ]
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc$awsx:x:ec2:Subnet::default-vpc-public-0",
+                "custom": false,
+                "type": "awsx:x:ec2:Subnet",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc::default-vpc",
+                "aliases": [
+                    "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc$awsx:x:ec2:Subnet::default-vpc-public-0",
+                    "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc$awsx:x:ec2:Subnet::default-vpc-2791174d-public-0"
+                ]
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc$awsx:x:ec2:Subnet::default-vpc-public-1",
+                "custom": false,
+                "type": "awsx:x:ec2:Subnet",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc::default-vpc",
+                "aliases": [
+                    "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc$awsx:x:ec2:Subnet::default-vpc-public-1",
+                    "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc$awsx:x:ec2:Subnet::default-vpc-2791174d-public-1"
+                ]
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::aws:lb:ApplicationLoadBalancer$awsx:lb:ApplicationListener$awsx:x:ec2:IngressSecurityGroupRule::hcs-cluster-req-han-alb-external-0-ingress",
+                "custom": false,
+                "type": "awsx:x:ec2:IngressSecurityGroupRule",
+                "parent": "urn:pulumi:dev::hcs-sys-public::aws:lb:ApplicationLoadBalancer$awsx:lb:ApplicationListener::hcs-cluster-req-han-alb",
+                "aliases": [
+                    "urn:pulumi:dev::hcs-sys-public::aws:lb:ApplicationLoadBalancer$awsx:x:elasticloadbalancingv2:ApplicationListener$awsx:x:ec2:IngressSecurityGroupRule::hcs-cluster-req-han-alb-external-0-ingress",
+                    "urn:pulumi:dev::hcs-sys-public::awsx:lb:ApplicationListener$awsx:x:ec2:IngressSecurityGroupRule::hcs-cluster-req-han-alb-external-0-ingress",
+                    "urn:pulumi:dev::hcs-sys-public::awsx:x:elasticloadbalancingv2:ApplicationLoadBalancer$awsx:lb:ApplicationListener$awsx:x:ec2:IngressSecurityGroupRule::hcs-cluster-req-han-alb-external-0-ingress"
+                ]
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup$aws:ec2/securityGroup:SecurityGroup::hcs-cluster-req-han-alb",
+                "custom": true,
+                "id": "sg-00998bd9b5777dc0c",
+                "type": "aws:ec2/securityGroup:SecurityGroup",
+                "inputs": {
+                    "__defaults": [
+                        "name",
+                        "revokeRulesOnDelete"
+                    ],
+                    "description": "Default security group for ALB: hcs-cluster-req-han-alb",
+                    "name": "hcs-cluster-req-han-alb-4ff9ab6",
+                    "revokeRulesOnDelete": false,
+                    "vpcId": "vpc-2791174d"
+                },
+                "outputs": {
+                    "__meta": "{\"e2bfb730-ecaa-11e6-8f88-34363bc7c4c0\":{\"create\":600000000000,\"delete\":900000000000},\"schema_version\":\"1\"}",
+                    "arn": "arn:aws:ec2:eu-central-1:711303001971:security-group/sg-00998bd9b5777dc0c",
+                    "description": "Default security group for ALB: hcs-cluster-req-han-alb",
+                    "egress": [],
+                    "id": "sg-00998bd9b5777dc0c",
+                    "ingress": [],
+                    "name": "hcs-cluster-req-han-alb-4ff9ab6",
+                    "namePrefix": "",
+                    "ownerId": "711303001971",
+                    "revokeRulesOnDelete": false,
+                    "tags": {},
+                    "tagsAll": {},
+                    "vpcId": "vpc-2791174d"
+                },
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:SecurityGroup::hcs-cluster-req-han-alb",
+                "dependencies": [
+                    "urn:pulumi:dev::hcs-sys-public::aws:ec2/vpc:Vpc::default-vpc"
+                ],
+                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::7ed1fff3-8903-4ee5-80d4-5a43d202147e",
+                "propertyDependencies": {
+                    "description": null,
+                    "vpcId": [
+                        "urn:pulumi:dev::hcs-sys-public::aws:ec2/vpc:Vpc::default-vpc"
+                    ]
+                }
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::aws:lb:ApplicationLoadBalancer$awsx:lb:ApplicationTargetGroup$aws:lb/targetGroup:TargetGroup::hcs-cluster-req-han-alb",
+                "custom": true,
+                "id": "arn:aws:elasticloadbalancing:eu-central-1:711303001971:targetgroup/hcs-cluster-req-han-alb-e66af64/2bb3622ab0bedbb9",
+                "type": "aws:lb/targetGroup:TargetGroup",
+                "inputs": {
+                    "__defaults": [
+                        "lambdaMultiValueHeadersEnabled",
+                        "name",
+                        "proxyProtocolV2",
+                        "slowStart"
+                    ],
+                    "deregistrationDelay": 300,
+                    "lambdaMultiValueHeadersEnabled": false,
+                    "name": "hcs-cluster-req-han-alb-e66af64",
+                    "port": 8000,
+                    "protocol": "HTTP",
+                    "proxyProtocolV2": false,
+                    "slowStart": 0,
+                    "tags": {
+                        "Name": "hcs-cluster-req-han-alb",
+                        "__defaults": []
+                    },
+                    "targetType": "ip",
+                    "vpcId": "vpc-2791174d"
+                },
+                "outputs": {
+                    "arn": "arn:aws:elasticloadbalancing:eu-central-1:711303001971:targetgroup/hcs-cluster-req-han-alb-e66af64/2bb3622ab0bedbb9",
+                    "arnSuffix": "targetgroup/hcs-cluster-req-han-alb-e66af64/2bb3622ab0bedbb9",
+                    "deregistrationDelay": 300,
+                    "healthCheck": {
+                        "enabled": true,
+                        "healthyThreshold": 5,
+                        "interval": 30,
+                        "matcher": "200",
+                        "path": "/",
+                        "port": "traffic-port",
+                        "protocol": "HTTP",
+                        "timeout": 5,
+                        "unhealthyThreshold": 2
+                    },
+                    "id": "arn:aws:elasticloadbalancing:eu-central-1:711303001971:targetgroup/hcs-cluster-req-han-alb-e66af64/2bb3622ab0bedbb9",
+                    "lambdaMultiValueHeadersEnabled": false,
+                    "loadBalancingAlgorithmType": "round_robin",
+                    "name": "hcs-cluster-req-han-alb-e66af64",
+                    "port": 8000,
+                    "protocol": "HTTP",
+                    "protocolVersion": "HTTP1",
+                    "proxyProtocolV2": false,
+                    "slowStart": 0,
+                    "stickiness": {
+                        "cookieDuration": 86400,
+                        "enabled": false,
+                        "type": "lb_cookie"
+                    },
+                    "tags": {
+                        "Name": "hcs-cluster-req-han-alb"
+                    },
+                    "tagsAll": {
+                        "Name": "hcs-cluster-req-han-alb"
+                    },
+                    "targetType": "ip",
+                    "vpcId": "vpc-2791174d"
+                },
+                "parent": "urn:pulumi:dev::hcs-sys-public::aws:lb:ApplicationLoadBalancer$awsx:lb:ApplicationTargetGroup::hcs-cluster-req-han-alb",
+                "dependencies": [
+                    "urn:pulumi:dev::hcs-sys-public::aws:ec2/vpc:Vpc::default-vpc"
+                ],
+                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::7ed1fff3-8903-4ee5-80d4-5a43d202147e",
+                "propertyDependencies": {
+                    "deregistrationDelay": null,
+                    "port": null,
+                    "protocol": null,
+                    "tags": null,
+                    "targetType": null,
+                    "vpcId": [
+                        "urn:pulumi:dev::hcs-sys-public::aws:ec2/vpc:Vpc::default-vpc"
+                    ]
+                },
+                "aliases": [
+                    "urn:pulumi:dev::hcs-sys-public::aws:lb:ApplicationLoadBalancer$awsx:lb:ApplicationTargetGroup$aws:lb/targetGroup:TargetGroup::a6e926cd",
+                    "urn:pulumi:dev::hcs-sys-public::aws:lb:ApplicationLoadBalancer$awsx:lb:ApplicationTargetGroup$aws:elasticloadbalancingv2/targetGroup:TargetGroup::hcs-cluster-req-han-alb",
+                    "urn:pulumi:dev::hcs-sys-public::aws:lb:ApplicationLoadBalancer$awsx:x:elasticloadbalancingv2:ApplicationTargetGroup$aws:lb/targetGroup:TargetGroup::hcs-cluster-req-han-alb",
+                    "urn:pulumi:dev::hcs-sys-public::awsx:lb:ApplicationTargetGroup$aws:lb/targetGroup:TargetGroup::hcs-cluster-req-han-alb",
+                    "urn:pulumi:dev::hcs-sys-public::awsx:x:elasticloadbalancingv2:ApplicationLoadBalancer$awsx:lb:ApplicationTargetGroup$aws:lb/targetGroup:TargetGroup::hcs-cluster-req-han-alb"
+                ]
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc$aws:ec2/vpc:Vpc::hcs-vpc",
+                "custom": true,
+                "id": "vpc-032839c563e2a1c24",
+                "type": "aws:ec2/vpc:Vpc",
+                "inputs": {
+                    "__defaults": [],
                     "assignGeneratedIpv6CidrBlock": false,
                     "cidrBlock": "10.0.0.0/24",
-                    "defaultNetworkAclId": "acl-07aeb50dc090f1f8c",
-                    "defaultRouteTableId": "rtb-09e67933b6331b770",
-                    "defaultSecurityGroupId": "sg-0dfdc705feb4427b5",
-                    "dhcpOptionsId": "dopt-01b83e6b",
-                    "enableDnsHostnames": false,
+                    "enableDnsHostnames": true,
                     "enableDnsSupport": true,
-                    "id": "vpc-0230dedce1c760537",
+                    "instanceTenancy": "default",
+                    "tags": {
+                        "CreatedBy": "Leonard Pahlke",
+                        "DeployEnvironment": "dev",
+                        "Name": "hcs-vpc",
+                        "ProjectName": "hcs",
+                        "__defaults": []
+                    }
+                },
+                "outputs": {
+                    "__meta": "{\"schema_version\":\"1\"}",
+                    "arn": "arn:aws:ec2:eu-central-1:711303001971:vpc/vpc-032839c563e2a1c24",
+                    "assignGeneratedIpv6CidrBlock": false,
+                    "cidrBlock": "10.0.0.0/24",
+                    "defaultNetworkAclId": "acl-0bf534ba37ca21997",
+                    "defaultRouteTableId": "rtb-000d60fc380b6e2b9",
+                    "defaultSecurityGroupId": "sg-052ba3aacf75f59ab",
+                    "dhcpOptionsId": "dopt-01b83e6b",
+                    "enableDnsHostnames": true,
+                    "enableDnsSupport": true,
+                    "id": "vpc-032839c563e2a1c24",
                     "instanceTenancy": "default",
                     "ipv6AssociationId": "",
                     "ipv6CidrBlock": "",
-                    "mainRouteTableId": "rtb-09e67933b6331b770",
+                    "mainRouteTableId": "rtb-000d60fc380b6e2b9",
                     "ownerId": "711303001971",
                     "tags": {
                         "CreatedBy": "Leonard Pahlke",
@@ -257,53 +750,129 @@
                         "ProjectName": "hcs"
                     }
                 },
-                "parent": "urn:pulumi:dev::hcs-sys-public::pulumi:pulumi:Stack::hcs-sys-public-dev",
-                "external": true,
-                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::f6814b7f-2ac1-4107-87ba-d7e33bfda61f"
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ec2:Vpc::hcs-vpc",
+                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::7ed1fff3-8903-4ee5-80d4-5a43d202147e",
+                "propertyDependencies": {
+                    "assignGeneratedIpv6CidrBlock": null,
+                    "cidrBlock": null,
+                    "enableDnsHostnames": null,
+                    "enableDnsSupport": null,
+                    "instanceTenancy": null,
+                    "tags": null
+                },
+                "aliases": [
+                    "urn:pulumi:dev::hcs-sys-public::aws:ec2/vpc:Vpc::hcs-vpc"
+                ]
             },
             {
-                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:Cluster$aws:ecs/cluster:Cluster::hcs-cluster-req-han",
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition$aws:ecr/lifecyclePolicy:LifecyclePolicy::hcs-ecr",
                 "custom": true,
-                "id": "arn:aws:ecs:eu-central-1:711303001971:cluster/hcs-cluster-req-han-6958f83",
-                "type": "aws:ecs/cluster:Cluster",
+                "id": "hcs-ecr-5556693",
+                "type": "aws:ecr/lifecyclePolicy:LifecyclePolicy",
                 "inputs": {
-                    "__defaults": [
-                        "name"
-                    ],
-                    "name": "hcs-cluster-req-han-6958f83",
-                    "tags": {
-                        "Name": "hcs-cluster-req-han",
-                        "__defaults": []
-                    }
+                    "__defaults": [],
+                    "policy": "{\"rules\":[{\"rulePriority\":10,\"description\":\"remove untagged images\",\"selection\":{\"tagStatus\":\"untagged\",\"countType\":\"imageCountMoreThan\",\"countNumber\":1},\"action\":{\"type\":\"expire\"}}]}",
+                    "repository": "hcs-ecr-5556693"
                 },
                 "outputs": {
-                    "arn": "arn:aws:ecs:eu-central-1:711303001971:cluster/hcs-cluster-req-han-6958f83",
-                    "capacityProviders": [],
-                    "defaultCapacityProviderStrategies": [],
-                    "id": "arn:aws:ecs:eu-central-1:711303001971:cluster/hcs-cluster-req-han-6958f83",
-                    "name": "hcs-cluster-req-han-6958f83",
-                    "settings": [
-                        {
-                            "name": "containerInsights",
-                            "value": "disabled"
-                        }
-                    ],
-                    "tags": {
-                        "Name": "hcs-cluster-req-han"
-                    },
-                    "tagsAll": {
-                        "Name": "hcs-cluster-req-han"
-                    }
+                    "id": "hcs-ecr-5556693",
+                    "policy": "{\"rules\":[{\"rulePriority\":10,\"description\":\"remove untagged images\",\"selection\":{\"tagStatus\":\"untagged\",\"countType\":\"imageCountMoreThan\",\"countNumber\":1},\"action\":{\"type\":\"expire\"}}]}",
+                    "registryId": "711303001971",
+                    "repository": "hcs-ecr-5556693"
                 },
-                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:Cluster::hcs-cluster-req-han",
-                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::f6814b7f-2ac1-4107-87ba-d7e33bfda61f",
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition::hcs-cluster-req-han-svc",
+                "dependencies": [
+                    "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition$aws:ecr/repository:Repository::hcs-ecr"
+                ],
+                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::7ed1fff3-8903-4ee5-80d4-5a43d202147e",
                 "propertyDependencies": {
-                    "tags": null
+                    "policy": null,
+                    "repository": [
+                        "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition$aws:ecr/repository:Repository::hcs-ecr"
+                    ]
+                }
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition$aws:iam/rolePolicyAttachment:RolePolicyAttachment::hcs-cluster-req-han-svc-task-0cbb1731",
+                "custom": true,
+                "id": "hcs-cluster-req-han-svc-task-5c0de19-20210902113554420800000002",
+                "type": "aws:iam/rolePolicyAttachment:RolePolicyAttachment",
+                "inputs": {
+                    "__defaults": [],
+                    "policyArn": "arn:aws:iam::aws:policy/AmazonECS_FullAccess",
+                    "role": "hcs-cluster-req-han-svc-task-5c0de19"
+                },
+                "outputs": {
+                    "id": "hcs-cluster-req-han-svc-task-5c0de19-20210902113554420800000002",
+                    "policyArn": "arn:aws:iam::aws:policy/AmazonECS_FullAccess",
+                    "role": "hcs-cluster-req-han-svc-task-5c0de19"
+                },
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition::hcs-cluster-req-han-svc",
+                "dependencies": [
+                    "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition$aws:iam/role:Role::hcs-cluster-req-han-svc-task"
+                ],
+                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::7ed1fff3-8903-4ee5-80d4-5a43d202147e",
+                "propertyDependencies": {
+                    "policyArn": null,
+                    "role": [
+                        "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition$aws:iam/role:Role::hcs-cluster-req-han-svc-task"
+                    ]
+                }
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition$aws:iam/rolePolicyAttachment:RolePolicyAttachment::hcs-cluster-req-han-svc-task-b5aeb6b6",
+                "custom": true,
+                "id": "hcs-cluster-req-han-svc-task-5c0de19-20210902113554414900000001",
+                "type": "aws:iam/rolePolicyAttachment:RolePolicyAttachment",
+                "inputs": {
+                    "__defaults": [],
+                    "policyArn": "arn:aws:iam::aws:policy/AWSLambda_FullAccess",
+                    "role": "hcs-cluster-req-han-svc-task-5c0de19"
+                },
+                "outputs": {
+                    "id": "hcs-cluster-req-han-svc-task-5c0de19-20210902113554414900000001",
+                    "policyArn": "arn:aws:iam::aws:policy/AWSLambda_FullAccess",
+                    "role": "hcs-cluster-req-han-svc-task-5c0de19"
+                },
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition::hcs-cluster-req-han-svc",
+                "dependencies": [
+                    "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition$aws:iam/role:Role::hcs-cluster-req-han-svc-task"
+                ],
+                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::7ed1fff3-8903-4ee5-80d4-5a43d202147e",
+                "propertyDependencies": {
+                    "policyArn": null,
+                    "role": [
+                        "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition$aws:iam/role:Role::hcs-cluster-req-han-svc-task"
+                    ]
+                }
+            },
+            {
+                "urn": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition$aws:iam/rolePolicyAttachment:RolePolicyAttachment::hcs-cluster-req-han-svc-execution-9a42f520",
+                "custom": true,
+                "id": "hcs-cluster-req-han-svc-execution-4a38be6-20210902113554947200000003",
+                "type": "aws:iam/rolePolicyAttachment:RolePolicyAttachment",
+                "inputs": {
+                    "__defaults": [],
+                    "policyArn": "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
+                    "role": "hcs-cluster-req-han-svc-execution-4a38be6"
+                },
+                "outputs": {
+                    "id": "hcs-cluster-req-han-svc-execution-4a38be6-20210902113554947200000003",
+                    "policyArn": "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
+                    "role": "hcs-cluster-req-han-svc-execution-4a38be6"
+                },
+                "parent": "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition::hcs-cluster-req-han-svc",
+                "dependencies": [
+                    "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition$aws:iam/role:Role::hcs-cluster-req-han-svc-execution"
+                ],
+                "provider": "urn:pulumi:dev::hcs-sys-public::pulumi:providers:aws::default_4_5_1::7ed1fff3-8903-4ee5-80d4-5a43d202147e",
+                "propertyDependencies": {
+                    "policyArn": null,
+                    "role": [
+                        "urn:pulumi:dev::hcs-sys-public::awsx:x:ecs:FargateTaskDefinition$aws:iam/role:Role::hcs-cluster-req-han-svc-execution"
+                    ]
                 }
             }
-        ],
-        "pending_operations": [
-            
         ]
     }
 }

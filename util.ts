@@ -2,7 +2,7 @@
 
 export const projectName = "hcs";
 export const deployEnvironment = "dev";
-export const author = "Leonard Pahlke";
+export const author = "l.pahlke@reply.de";
 
 /**
  * GetTags is a method that can get used to set tag to services created with pulumi

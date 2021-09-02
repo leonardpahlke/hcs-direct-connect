@@ -171,22 +171,3 @@ echo "Now you should be able to connect vise versa between each virtual machines
 \n ${YELLOW}1.${NC} connect to the vm over the connnect.sh script and 
 \n ${YELLOW}2.${NC} ping $wgPrivateIpServer"
 echo
-
-# # --------
-# # 8. check connection (use other file "check-connection.sh")
-# echo "${LIGHT_BLUE}DEPLOY-MAIN: 8. check connection${NC}"
-# echo "Set configuration for hcs-public to reach private-cloud"
-# curl -X POST $hcs_sys_public_albHostReqHandler/set-config/$hcs_sys_private_legacySysPublicIp/$legacyComponentPort
-
-# echo "Run health-check"
-# ./scripts/check-connection.sh $hcs_sys_platform_endpointUrl
-
-# echo
-# echo "${LIGHT_BLUE}FINISHED WITH HYBRID-CLOUD-DEPLOYMENT${NC}"
-# echo
-
-echo "Update configuration"
-curl -X 'POST' \
-    'http://hcs-cluster-req-han-alb-23bd37a-387184994.eu-central-1.elb.amazonaws.com:8000/set-config/10.50.0.2/8050' \
-    -H 'accept: application/json' \
-    -d ''

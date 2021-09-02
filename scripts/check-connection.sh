@@ -2,3 +2,4 @@
 # todo..
 
 echo "todo... hcs_sys_platform_endpointUrl: $1"
+checkEndpoint $1

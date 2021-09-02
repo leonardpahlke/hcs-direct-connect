@@ -3,13 +3,14 @@ import * as aws from "@pulumi/aws";
 import * as awsx from "@pulumi/awsx";
 import { projectName, GetTags } from "../../util";
 
-const clusterReqHandlerName = projectName + "-cluster";
+const clusterReqHandlerName = projectName + "-cluster-req-han";
 
 /**
  * CONFIGURATION
  */
 
 // Get pulumi configuration to enable dynamic deployments
+const http = "HTTP";
 let config = new pulumi.Config();
 
 // Structured configuration input https://www.pulumi.com/docs/intro/concepts/config/#structured-configuration
@@ -18,6 +19,7 @@ interface ConfigData {
   clusterReqHandlerDesiredAmount: number;
   clusterReqHandlerMemory: number;
   keyPairName: string;
+  dockerImage: string;
 }
 
 let configData = config.requireObject<ConfigData>("data");
@@ -27,6 +29,7 @@ let clusterReqHandlerDesiredAmount =
   configData.clusterReqHandlerDesiredAmount || 1;
 let clusterReqHandlerMemory = configData.clusterReqHandlerMemory || 128;
 let keyPairName = configData.keyPairName || "hcs-gw-key";
+let dockerImage = configData.dockerImage || "leonardpahlke/hcs_req_handler";
 
 /**
  *
@@ -44,28 +47,50 @@ let keyPairName = configData.keyPairName || "hcs-gw-key";
 /**
  *
  * [A]: VPC NETWORK SETUP
- * 1. VPC which creates a public subnet
- *     a isolated subnet (private after setting route tables)
- *     and a internet gateway
+ * 1. VPC
+ * 2. Private Subnet
+ * 3. Public Subnet
+ * 4. Internet Gateway
  */
 // 1. Create a VPC which hosts most of the services created in this system
 const nameVpc = `${projectName}-vpc`;
-const subnetPrivateProcessingName = `${nameVpc}-sn-prv`;
-const subnetPublicGatewayName = `${nameVpc}-sn-pub`;
-const vpcCidr = "10.0.0.0/24";
-const vpc = new awsx.ec2.Vpc(nameVpc, {
-  cidrBlock: vpcCidr,
+const vpc = new aws.ec2.Vpc(nameVpc, {
+  cidrBlock: "10.0.0.0/24",
   tags: GetTags(nameVpc),
-  numberOfAvailabilityZones: 2,
-  subnets: [
-    { type: "private", name: subnetPrivateProcessingName },
-    { type: "public", name: subnetPublicGatewayName },
-  ],
 });
-const subnetPrivateProcessing1 = pulumi.output(vpc.privateSubnets)[0].subnet;
-const subnetPrivateProcessing2 = pulumi.output(vpc.privateSubnets)[1].subnet;
-const subnetPublicNatGateway1 = pulumi.output(vpc.publicSubnets)[0].subnet;
-const subnetPublicNatGateway2 = pulumi.output(vpc.publicSubnets)[1].subnet;
+
+// 2. Create the subnet private processing
+//   After more configuration is done.. this subnet does not have direct access
+//    to the internet and routes all outbound traffic over the NAT GW Server
+const subnetPrivateProcessingName = `${nameVpc}-sn-prv`;
+const subnetPrivateProcessingCidr = "10.0.0.16/28";
+const subnetPrivateProcessing = new aws.ec2.Subnet(
+  subnetPrivateProcessingName,
+  {
+    vpcId: vpc.id,
+    cidrBlock: subnetPrivateProcessingCidr,
+    tags: GetTags(subnetPrivateProcessingName),
+  }
+);
+
+// 3. Create the subnet public gateway
+//   After more configuration is done.. this subnet
+//    has internet access and hosts a EC2 NAT GW Intance
+const subnetPublicGatewayName = `${nameVpc}-sn-pub`;
+const subnetPublicGatewayCidr = "10.0.0.144/28";
+const subnetPublicNatGateway = new aws.ec2.Subnet(subnetPublicGatewayName, {
+  vpcId: vpc.id,
+  cidrBlock: subnetPublicGatewayCidr,
+  mapPublicIpOnLaunch: true,
+  tags: GetTags(subnetPublicGatewayName),
+});
+
+// 4. Create a internet gateway and attach it to the VPC to get internet access
+const internetGatewayName = `${nameVpc}-igw`;
+const igw = new aws.ec2.InternetGateway(internetGatewayName, {
+  vpcId: vpc.id,
+  tags: GetTags(internetGatewayName),
+});
 
 /**
  *
@@ -79,15 +104,15 @@ const natGwSecurityGroup = createSecurityGroup(
   sgNatGwName,
   vpc,
   [
-    getDefaultsSGRule({ port: 80, cidrBlocks: [vpcCidr] }),
+    getDefaultsSGRule({ port: 80, cidrBlocks: [subnetPrivateProcessingCidr] }),
     getDefaultsSGRule({ protocol: "ICMP" }),
-    getDefaultsSGRule({ port: 443, cidrBlocks: [vpcCidr] }),
+    getDefaultsSGRule({ port: 443, cidrBlocks: [subnetPrivateProcessingCidr] }),
     getDefaultsSGRule({ port: 22 }),
     getDefaultsSGRule({ port: 51820, protocol: "UDP" }),
   ],
   [
     getDefaultsSGRule({ protocol: "ICMP" }),
-    getDefaultsSGRule({ port: 443, cidrBlocks: [vpcCidr] }),
+    getDefaultsSGRule({ port: 443, cidrBlocks: [subnetPrivateProcessingCidr] }),
     getDefaultsSGRule({ port: 80 }),
     getDefaultsSGRule({ port: 51820, protocol: "UDP" }),
   ]
@@ -100,11 +125,14 @@ const fargateSecurityGroup = createSecurityGroup(
   vpc,
   [
     getDefaultsSGRule({ port: 80 }),
-    getDefaultsSGRule({ port: albClusterReqHandlerPort }),
     getDefaultsSGRule({ port: 443 }),
     getDefaultsSGRule({ port: 22 }),
   ],
-  [getDefaultsSGRule({ port: 0, protocol: "-1" })]
+  [
+    getDefaultsSGRule({ protocol: "TCP" }),
+    getDefaultsSGRule({ protocol: "ICMP" }),
+    getDefaultsSGRule({ protocol: "UDP" }),
+  ]
 );
 
 /**
@@ -116,51 +144,60 @@ const fargateSecurityGroup = createSecurityGroup(
 // 1. Create interface for ec2 gateway instance (AWS Elastic Network Interface (ENI))
 const natENIName = `${projectName}-nat-eni`;
 const natENI = new aws.ec2.NetworkInterface(natENIName, {
-  subnetId: subnetPublicNatGateway1.id,
-  securityGroups: [natGwSecurityGroup.securityGroup.id],
+  subnetId: subnetPublicNatGateway.id,
+  securityGroups: [natGwSecurityGroup.id],
   sourceDestCheck: false,
   tags: GetTags(natENIName),
 });
 
 // 2. Create EC2 gateway instance which will redirect traffic thorugh a VPN-Tunnel to WireGuard
-const size = "t2.micro";
 const AmiUbuntuHVM2004 = "ami-05f7491af5eef733a";
 const natInstanceName = `${projectName}-nat-instance`;
 const natInstance = new aws.ec2.Instance(natInstanceName, {
   ami: AmiUbuntuHVM2004,
-  instanceType: size,
-  networkInterfaces: [{ networkInterfaceId: natENI.id, deviceIndex: 0 }],
+  instanceType: "t2.micro",
+  networkInterfaces: [
+    {
+      networkInterfaceId: natENI.id,
+      deviceIndex: 0,
+    },
+  ],
   keyName: keyPairName,
-  creditSpecification: { cpuCredits: "unlimited" },
+  creditSpecification: {
+    cpuCredits: "unlimited",
+  },
   tags: GetTags(natInstanceName),
 });
 
 /**
  *
  * [D]: NETWORK ROUTETABLE SETUP
- * 1. RouteTable to connect private and public subnet
+ * 1. RouteTable to connect public subnet to the internet
+ * 2. RouteTable to connect private and public subnet
  */
+// 1. Create a RouteTable to redirect traffic from the public-subnet to an interet gateway
+const snRouteTableNamePublic = `${subnetPublicGatewayName}-rt`;
+const snPublicRouteTable = new aws.ec2.RouteTable(snRouteTableNamePublic, {
+  vpcId: vpc.id,
+  routes: [{ cidrBlock: "0.0.0.0/0", gatewayId: igw.id }],
+  tags: GetTags(snRouteTableNamePublic),
+});
+new aws.ec2.RouteTableAssociation(`${snRouteTableNamePublic}-asso`, {
+  subnetId: subnetPublicNatGateway.id,
+  routeTableId: snPublicRouteTable.id,
+});
 
-// 12. Create a RouteTable to redirect traffic from the private-subnet to the nat gateway server (EC2 Instance)
-// const snRouteTableNamePrivate = `${subnetPrivateProcessingName}-rt`;
-// const privateProcessingRouteTable = aws.ec2.getRouteTable({
-//   subnetId: pulumi.all([subnetPrivateProcessing1.id]).apply(([snId]) => `${snId}`),
-// });
-// new aws.ec2.Route(snRouteTableNamePrivate, {
-//   routeTableId: privateProcessingRouteTable.then((table) => table.id),
-//   destinationCidrBlock: "0.0.0.0/0",
-//   instanceId: natInstance.id,
-// });
-// const snPrivateRouteTable = new aws.ec2.RouteTable(snRouteTableNamePrivate, {
-//   vpcId: vpc.id,
-//   routes: [{ cidrBlock: "0.0.0.0/0", instanceId: natInstance.id }],
-//   tags: GetTags(snRouteTableNamePrivate),
-// });
-// new aws.ec2.RouteTableAssociation(`${snRouteTableNamePrivate}-asso`, {
-//   subnetId: subnetPrivateProcessing1.id,
-//   routeTableId: snPrivateRouteTable.id,
-// });
-// aws.ec2.MainRouteTableAssociation()
+// 2. Create a RouteTable to redirect traffic from the private-subnet to the nat gateway server (EC2 Instance)
+const snRouteTableNamePrivate = `${subnetPrivateProcessingName}-rt`;
+const snPrivateRouteTable = new aws.ec2.RouteTable(snRouteTableNamePrivate, {
+  vpcId: vpc.id,
+  routes: [{ cidrBlock: "0.0.0.0/0", instanceId: natInstance.id }],
+  tags: GetTags(snRouteTableNamePrivate),
+});
+new aws.ec2.RouteTableAssociation(`${snRouteTableNamePrivate}-asso`, {
+  subnetId: subnetPrivateProcessing.id,
+  routeTableId: snPrivateRouteTable.id,
+});
 
 /**
  *
@@ -170,11 +207,39 @@ const natInstance = new aws.ec2.Instance(natInstanceName, {
  */
 // 1. Create an application load balancer (ALB) & listener
 //    that has a publicly accessible endpoint needed to gain access to the ecs cluster
-const albListenerReqHandlerName = `${clusterReqHandlerName}-alb`;
 const albListenerReqHandler = new awsx.lb.ApplicationListener(
-  albListenerReqHandlerName,
-  { port: albClusterReqHandlerPort, vpc: vpc, name: albListenerReqHandlerName }
+  `${clusterReqHandlerName}-alb`,
+  { port: albClusterReqHandlerPort }
 );
+
+const albTgName = `${projectName}-tg`;
+const albTg = new aws.lb.TargetGroup(albTgName, {
+  name: albTgName,
+  port: albClusterReqHandlerPort,
+  protocol: http,
+  vpcId: vpc.id,
+  targetType: "ip",
+  tags: GetTags(albTgName),
+});
+
+const albName = `${projectName}-alb`;
+const alb = new aws.lb.LoadBalancer(albName, {
+  name: albName,
+  tags: GetTags(albTgName),
+});
+
+const albListenerName = `${albName}-listener`;
+const albListener = new aws.lb.Listener(albListenerName, {
+  loadBalancerArn: alb.arn,
+  port: albClusterReqHandlerPort,
+  protocol: http,
+  defaultActions: [
+    {
+      type: "forward",
+      targetGroupArn: albTg.arn,
+    },
+  ],
+});
 
 /**
  *
@@ -184,35 +249,42 @@ const albListenerReqHandler = new awsx.lb.ApplicationListener(
  * 3. FargateService Definition
  */
 // 1. ECS Cluster which is used to register fargate service configurations
-const clusterReqHandler = new awsx.ecs.Cluster(clusterReqHandlerName, {
-  name: clusterReqHandlerName,
-  vpc: vpc,
-  securityGroups: [fargateSecurityGroup.id],
+const clusterReqHandler = new aws.ecs.Cluster(clusterReqHandlerName, {
   tags: { Name: clusterReqHandlerName },
 });
 
-// 3. FaragateService Definition which registers a service exec to the ECS Cluster
-const fargateServiceName = `${clusterReqHandlerName}-svc`;
-new awsx.ecs.FargateService(fargateServiceName, {
-  name: fargateServiceName,
-  desiredCount: clusterReqHandlerDesiredAmount,
-  cluster: clusterReqHandler,
-  assignPublicIp: false,
-  subnets: [subnetPrivateProcessing1.id],
-  waitForSteadyState: true,
-  taskDefinitionArgs: {
-    containers: {
-      requetHandler: {
-        image: awsx.ecs.Image.fromPath(
-          `${projectName}-ecr`,
-          "./req-handler-container"
-        ),
-        memory: clusterReqHandlerMemory,
-        portMappings: [albListenerReqHandler],
+// 2. TaskDefinition which describes how the requestHanlder container should get run on fargate
+const reqHandlerTaskDefinitionName = clusterReqHandlerName + "td";
+const reqHandlerTaskDefinition = new aws.ecs.TaskDefinition(
+  `${clusterReqHandlerName}-td`,
+  {
+    family: reqHandlerTaskDefinitionName,
+    requiresCompatibilities: ["FARGATE"],
+    containerDefinitions: JSON.stringify([
+      {
+        name: "reqHandler",
+        image: dockerImage,
+        essential: true,
+        portMappings: [{ containerPort: albClusterReqHandlerPort }],
       },
-    },
+    ]),
+    cpu: "10",
+    memory: `${clusterReqHandlerMemory}`,
+    networkMode: "awsvpc",
+    tags: GetTags(reqHandlerTaskDefinitionName),
+  }
+);
+
+// 3. FaragateService Definition which registers a service exec to the ECS Cluster
+new aws.ecs.Service(`${clusterReqHandlerName}-svc`, {
+  cluster: clusterReqHandler.arn,
+  taskDefinition: reqHandlerTaskDefinition.arn,
+  networkConfiguration: {
+    subnets: [subnetPrivateProcessing.id],
+    securityGroups: [fargateSecurityGroup.id],
   },
-  tags: GetTags(fargateServiceName),
+  desiredCount: clusterReqHandlerDesiredAmount,
+  waitForSteadyState: true,
 });
 
 /**
@@ -235,6 +307,22 @@ export const natInstancePublicIp = natInstance.publicIp;
 
 // ******************************
 // 1. SIMPLIFY HOW TO CREATE SECURITY GROUPS IN PULUMI
+// This function is used to simplify the creation of a security group
+function createSecurityGroup(
+  name: string,
+  vpc: aws.ec2.Vpc,
+  ingressRules: sgRule[],
+  egressRules: sgRule[],
+  description = ""
+): aws.ec2.SecurityGroup {
+  return new aws.ec2.SecurityGroup(name, {
+    description: description,
+    vpcId: vpc.id,
+    ingress: ingressRules,
+    egress: egressRules,
+    tags: GetTags(name),
+  });
+}
 
 // This interface is used to specify ingress and egress securitygroup rules
 interface sgRule {
@@ -251,21 +339,6 @@ interface sgRuleDefault {
   port?: number;
   protocol?: string;
   cidrBlocks?: string[];
-}
-
-// This function is used to simplify the creation of a security group
-function createSecurityGroup(
-  name: string,
-  vpc: awsx.ec2.Vpc,
-  ingressRules: sgRule[],
-  egressRules: sgRule[]
-): awsx.ec2.SecurityGroup {
-  return new awsx.ec2.SecurityGroup(name, {
-    vpc: vpc,
-    ingress: ingressRules,
-    egress: egressRules,
-    tags: GetTags(name),
-  });
 }
 
 // This function is used to simplfy the creation of security group rules

@@ -5,7 +5,7 @@ The diagram below highlights the area that is being developed.
 
 This project uses digital ocean as private-cloud even if it is public it could also function as private-cloud for a cooperation.
 
-![Software Architecture](./assets/BA-05-Verteilungssicht-2-hcs-sys-private-cloud.png)
+![Software Architecture](./assets/ba-05-verteilungssicht-2-private-cloud.png)
 
 The vagrant files a `token.yaml` file which needs to get created manually and should the digital ocean token to create a droplet. Example is shown below.
 
