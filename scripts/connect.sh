@@ -1,4 +1,4 @@
-# This script is getting used to manually connect to one of the virtual machines that got createdr
+# This script is getting used to manually connect to one of the virtual machines that got created
 # - - - - - - - - - - - - - - - - -
 # VARIABLES
 # - - - - - - - - - - - - - - - - -

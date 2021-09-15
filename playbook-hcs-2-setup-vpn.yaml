@@ -39,18 +39,21 @@
     #    policy: deny
     #    direction: incoming
 
-# WireGuard KeySetup
     - name: Allow redirection of network packets at kernel level
       ansible.builtin.shell: 
-        cmd: "echo net.ipv4.ip_forward=1 > /etc/sysctl.conf"
+        cmd: "echo 
+        net.ipv6.conf.all.forwarding = 1
+        net.ipv4.conf.all.accept_redirects = 0
+        net.ipv4.conf.all.send_redirects = 0
+        net.ipv4.ip_forward=1 > /etc/sysctl.conf"
     
     - name: Apply changes
       ansible.builtin.shell: 
         cmd: "sysctl -p"
     
-    - name: Create public- and private-key for vpn connection
+    - name: Install strongswarn
       ansible.builtin.shell: 
-        cmd: wg genkey | sudo tee /etc/wireguard/server_private.key | wg pubkey | sudo tee /etc/wireguard/server_public.key
+        cmd: apt-get install strongswan libcharon-extra-plugins strongswan-pki -y
     
     - name: Update read/write settings for private-key file
       ansible.builtin.shell: 

@@ -24,13 +24,9 @@ const PROJECT_GCP_BUCKET_REGION = "EU"
 // const API_CIDR = "199.36.153.4/30"
 
 // VM settings
-const VM_MACHINE_IMAGE = "debian-cloud/debian-9" // "ubuntu-os-cloud/ubuntu-2104"
+const VM_MACHINE_IMAGE = "ubuntu-os-cloud/ubuntu-2104" // debian-cloud/debian-9
 const VM_MACHINE_TYPE = "f1-micro"
 const VM_DISK_SIZE_GB = 10
-
-// const ONPREM_SUBNET_CIDR = "192.168.0.0/20"
-// const ONPREM_PEER_IP = "15.0.0.120"
-// const VPN_SHARED_SECRET = "SECRET_MESSAGE"
 
 // Firewall vars
 const _DIRECTION_INGRESS string = "INGRESS"
@@ -125,7 +121,12 @@ func main() {
 
 		// * * * * * * * * * * * * * * * * * * * * * * * *
 		// VM, NAT-GATEWAY INSTANCE
-		vmStaticAdr, err := compute.NewAddress(ctx, createName("vm-static"), nil)
+		vmStaticAdrName := createName("addr-vm-static")
+		vmStaticAdr, err := compute.NewAddress(ctx, vmStaticAdrName, &compute.AddressArgs{
+			Name:    pulumi.String(vmStaticAdrName),
+			Project: pulumi.String(PROJECT_NAME_GCP),
+			Region:  pulumi.String(PROJECT_GCP_REGION),
+		})
 		if err != nil {
 			return err
 		}
@@ -245,9 +246,9 @@ func main() {
 			{name: "fr-esp", ipProtocol: "ESP"},
 			{name: "fr-udp-500", ipProtocol: "UDP", portRange: "500"},
 			{name: "fr-udp-4500", ipProtocol: "UDP", portRange: "4500"},
-			{name: "fr-tcp-80", ipProtocol: "TCP", portRange: "80"},
-			{name: "fr-tcp-443", ipProtocol: "TCP", portRange: "443"},
-			{name: "fr-tcp-22", ipProtocol: "TCP", portRange: "22"},
+			// {name: "fr-tcp-80", ipProtocol: "TCP", portRange: "80"},
+			// {name: "fr-tcp-443", ipProtocol: "TCP", portRange: "443"},
+			// {name: "fr-tcp-22", ipProtocol: "TCP", portRange: "22"},
 		} {
 			fwdRule, err := compute.NewForwardingRule(ctx, createName(e.name), &compute.ForwardingRuleArgs{
 				IpProtocol: pulumi.String(e.ipProtocol),
@@ -299,6 +300,7 @@ func main() {
 		ctx.Export("tunnel_ip", hcsVpnStaticIp.Address)
 		ctx.Export("instance_zone", pulumi.String(PROJECT_GCP_ZONE))
 		ctx.Export("project_name", pulumi.String(PROJECT_NAME_GCP))
+		ctx.Export("instance_ip", vmStaticAdr.Address)
 
 		return nil
 	})

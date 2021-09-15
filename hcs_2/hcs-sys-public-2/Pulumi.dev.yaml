@@ -4,7 +4,7 @@ config:
     GcpApiCidr: 199.36.153.4/30
     GcpVmReqHandlerPort: 8000
     GcpVpcSubnetCidr: 10.10.0.0/20
-    OnpremPeerIp: 157.230.77.21
+    OnpremPeerIp: 138.68.125.117
     OnpremSharedSecret:
-      secure: AAABADYH4H7sBtQeu9Hp6FDF++o/WzG7T+XuPUC+82x7F8u8ojT93uOsNx4/fFGapruBk9Tw
+      secure: AAABALhanslpWeGIJigTcg+ug+TZo53891BrQJXEggQ/cXc/SrcgOhbZ9yUj2Pi6uSt6kjnF
     OnpremSubnetCidr: 10.194.0.0/20

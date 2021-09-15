@@ -1,5 +1,6 @@
 import secrets
 import json
+import subprocess
 import os
 from pathlib import Path
 from hcs_2.provision_hcs_priv import InProvisionerPriv2, ProvisionerPriv2
@@ -58,8 +59,6 @@ def hcs2_deploy():
     gcp_api_cidr = "199.36.153.4/30"
     request_handler_path = "/health-check-connection"
 
-    # * * * * * * * * * * *
-    # DEPLOY HCS-2-PRIVATE
     print_blue("START WITH HCS-2-PRIVATE")
     provisioner_priv = ProvisionerPriv2(
         input=InProvisionerPriv2(vpc_cidr=onprem_vpc_cidr))
@@ -67,8 +66,6 @@ def hcs2_deploy():
     on_prem_peer_ip = provisioner_priv.get_output_var("floating_ipv4")
     print(f"on_prem_peer_ip: {on_prem_peer_ip}")
 
-    # * * * * * * * * * * *
-    # DEPLOY HCS-2-PUBLIC
     print_blue("START WITH HCS-2-PUBLIC")
     provisioner_pub = ProvisionerPub2(
         input=InProvisionerPub2(
@@ -81,16 +78,13 @@ def hcs2_deploy():
         ))
     provisioner_pub.deploy()
     gcp_tunnel_ipv4 = provisioner_pub.get_output_var("tunnel_ip")
-    #gcp_req_handler_vm_ipv4 = provisioner_pub.get_output_var("")
+    gcp_req_handler_vm_ipv4 = provisioner_pub.get_output_var("instance_ip")
     print(f"gcp_tunnel_ipv4: {gcp_tunnel_ipv4}")
 
-    # * * * * * * * * * * *
-    # DEPLOY HCS-PLATFORM
     # subprocess.call(f"cd {folder_hcs_sys_platform}/", shell=True)
     # subprocess.call(
     #     f"./deploy.sh {gcp_req_handler_vm_ipv4} {request_handler_path} {gcp_vm_req_handler_port}", shell=True)
     # subprocess.call("cd ..", shell=True)
-    # aws_platform_ipv4 = None
 
 
 # - - - - - - - - - - - - - - - - - - - - -
@@ -114,23 +108,6 @@ def hcs2_destroy():
     #    f"{pathlib.Path(__file__).parent.resolve()}/{folder_hcs_sys_platform}")
     #subprocess.call("./destroy.sh", shell=True)
     # os.chdir(pathlib.Path(__file__).parent.resolve())
-
-
-# - - - - - - - - - - - - - - - - - - - - -
-# Connect to one of the created resources // does not work - use the script ~/hcs/connect-hcs-2.sh
-# def hcs2_provision_connect():
-#     print_blue("START HCS-CONNECT")
-#     method = input(
-#         f"Select to which resource you want to connect to [{yelw_str('a')}, {yelw_str('b')}] \n- [{yelw_str('a')}]: gcp-req-handler \n- [{yelw_str('b')}]: do-legacy-vm \n>> ")
-#     if method == "a":
-#         ProvisionerPub2(input=InProvisionerPub2(
-#             on_prem_peer_ip="",
-#             on_prem_shared_secret="",)).connect("")
-#     elif method == "b":
-#         ProvisionerPriv2(
-#             input=InProvisionerPriv2()).connect("")
-#     else:
-#         raise SystemExit(f"Invalid input received:[{method}], exit")
 
 
 # Execute this file and select deploy / destroy - connect via the script ~/hcs/connect-hcs-2.sh to created resources

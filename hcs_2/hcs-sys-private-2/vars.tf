@@ -10,7 +10,8 @@ variable "region" {
 variable "vm_image" {
   description = "Virtual Machine Image"
   type        = string
-  default     = "debian-9-x64"
+  default     = "ubuntu-20-04-x64"
+  #"debian-9-x64"
 }
 # Set default resource specification for vm
 #  see: https://developers.digitalocean.com/documentation/v2/#list-all-sizes

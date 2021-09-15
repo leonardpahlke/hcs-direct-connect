@@ -70,20 +70,6 @@ class ProvisionerPub2(provisioner.Provisioner):
                       self.get_sub_folder_path(self.repo_name))
         logging.info(f"FINISHED DESTROYING {self.name}")
 
-    # Connect to request handler vm // does not work - use the script ~/hcs/connect-hcs-2.sh
-    # def connect(self, id):
-    #     logging.info(f"Connect to {self.name} REQUEST_HANDLER VM")
-    #     zone = self.sys_call("pulumi stack output zone {self.stack_flag}",
-    #                          self.get_sub_folder_path(self.repo_name), True)
-    #     instance_name = self.sys_call(
-    #         "pulumi stack output instance_name {self.stack_flag}", self.get_sub_folder_path(self.repo_name), True)
-    #     project_name = self.sys_call(
-    #         "pulumi stack output project_name {self.stack_flag}", self.get_sub_folder_path(self.repo_name), True)
-
-    #     logging.info(f"With info: {zone}, {instance_name}, {project_name}")
-    #     self.sys_call(
-    #         f"gcloud beta compute ssh --zone {zone} {instance_name} --tunnel-through-iap --project {project_name}", self.get_sub_folder_path(self.repo_name))
-
     # Get one of the outputs created by deploying the stack (Pulumi outputs)
     def get_output_var(self, key) -> str:
         return self.sys_call(f"pulumi stack output {key}", path=self.get_sub_folder_path(self.repo_name), wait_for_resp=True)

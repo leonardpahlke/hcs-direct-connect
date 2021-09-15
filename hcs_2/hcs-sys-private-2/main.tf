@@ -21,18 +21,6 @@ resource "digitalocean_droplet" "legacy_vm" {
   size               = var.vm_resources
   private_networking = true
   ssh_keys           = [data.digitalocean_ssh_key.id_rsa_hcs.id]
-  # connection {
-  #   host        = self.ipv4_address
-  #   user        = "root"
-  #   type        = "ssh"
-  #   private_key = file(var.pvt_key)
-  #   timeout     = "2m"
-  # }
-  # provisioner "remote-exec" {
-  #   inline = [
-  #     "apt-get update && apt-get install -y strongswan iptables ipsec-tools dnsutils traceroute bind9 vim telnet"
-  #   ]
-  # }
   depends_on = [
     digitalocean_floating_ip.hcs_floating_ip
   ]
